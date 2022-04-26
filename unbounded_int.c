@@ -1,4 +1,5 @@
 #include"unbounded_int.h"
+#include <ctype.h>
 
 static unbounded_int init_unb_int() {
   unbounded_int res;
@@ -12,6 +13,9 @@ static unbounded_int init_unb_int() {
 static chiffre *init_chiffre(char c) {
   chiffre *res;
   res = malloc(sizeof(chiffre));
+  if(res==NULL){
+    return NULL;
+  }
   res->c = c;
   res->suivant = NULL;
   res->precedent = NULL;
@@ -20,6 +24,10 @@ static chiffre *init_chiffre(char c) {
 
 static void ajouter_chiffre_debut(unbounded_int *nbr, char c) {
   chiffre *ajout = init_chiffre(c);
+  if(ajout==NULL){
+    nbr->signe='*';
+    return;
+  }
   if (nbr->premier == NULL && nbr->dernier == NULL) {
     nbr->premier = ajout;
     nbr->dernier = ajout;
@@ -44,18 +52,72 @@ static void ajouter_chiffre_fin(unbounded_int *nbr, char c) {
   nbr->len++;
 }
 
+/*
+  Retourne NULL si le char* entré e contient des caractères autre que des chiffres (à l'exception de '+' et '-' pour indiquer une signe), ou sinon, retourne char* *(e+start) où start est le premier index d'un chiffre différent de zero.
+  Si e contient que des zeros, retourne le dernier 0 de e.
+
+  Exemple: "-0123"    -> 0123
+           "00014803" -> 14803
+           "*786"     -> NULL
+           "+A123"    -> NULL
+           ""         -> NULL
+           "0000000"  -> 0
+*/
+char* getInt(const char* e) {
+  int start=-1;
+  int len=strlen(e);
+  if(len==0) return NULL;
+  int i=0;
+  if (*e != '+' && *e != '-') {
+    if(isdigit(*e)==0) return NULL;
+  }
+  else{
+    if(len>1) i++;
+    else return NULL;
+  }
+  
+  while(i<len){    
+    if(isdigit(*(e+i))==0){
+      return NULL;
+    }
+    else{
+      if(start==-1 && *(e+i)!='0'){
+	start=i;
+      }
+    }
+    i++;
+  }
+
+  char* res;
+  if(start==-1) res=(char*)(e+(len-1));
+  else res=(char*)(e+start);
+  return res;
+}
+
 unbounded_int string2unbounded_int(const char *e) {
-  int length = strlen(e);
-  int count = 0;
-  unbounded_int res = init_unb_int();
+  unbounded_int res = init_unb_int();  
+  if(e==NULL || strlen(e)==0){
+    printf("String entré NULL ou vide.\n");
+    res.signe='*';
+    return res;
+  }
+  char* intE=getInt(e);    
+  if(intE==NULL){
+    printf("Entier pas trouvée: %s\n",e);
+    res.signe='*';
+    return res;
+  }
+  printf("Entier détecté: %s\n",intE);
+
+  int length=strlen(intE);
+  int count = 0;  
 
   if (*e == '+' || *e == '-') {
     res.signe = *e;
-    count++;
   }
 
   while (count < length) {
-    ajouter_chiffre_fin(&res, *(e + count));
+    ajouter_chiffre_fin(&res, *(intE + count));
     count++;
   }
 
@@ -80,3 +142,5 @@ unbounded_int ll2unbounded_int(long long i) {
 
   return res;
 }
+
+

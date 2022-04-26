@@ -11,14 +11,35 @@ void afficher_unb_int(unbounded_int aff) {
   printf("\n");
 }
 
-int main(void) {
-  unbounded_int un = string2unbounded_int("+1234");
-  afficher_unb_int(un);
+void testSTR2Int(char* e){
+  printf("\nString: %s\n",e);
+  unbounded_int res = string2unbounded_int(e);  
+  afficher_unb_int(res);
+}
 
-  unbounded_int deux = string2unbounded_int("-123");
-  afficher_unb_int(deux);
+int main(void) {
+  testSTR2Int("+1234");
+  
+  testSTR2Int("-123");
 
   unbounded_int trois = ll2unbounded_int(-11111222223LL);
   afficher_unb_int(trois);
+  
+  testSTR2Int("-");
+	      
+  testSTR2Int("00000");
+
+  testSTR2Int("-0001845d");
+
+  testSTR2Int("");
+
+  testSTR2Int(NULL);
+
+  testSTR2Int("*054");  
+
+  testSTR2Int("0001");
+
+  testSTR2Int("1000");
+
   return 0;
 }
