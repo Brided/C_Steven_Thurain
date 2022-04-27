@@ -175,20 +175,6 @@ unbounded_int ll2unbounded_int(long long i) {
   return res;
 }
 
-char *unbounded_int2string(unbounded_int i) {
-  char *res = malloc(i.len + 1);
-  char *resPtr = res;
-
-  *resPtr = i.signe;
-  resPtr++;
-
-  for(chiffre *e = i.premier; e != NULL; e = e->suivant, resPtr++) {
-    *resPtr = e->c;
-  }
-
-  return res;
-}
-
 int unbounded_int_cmp_unbounded_int(unbounded_int a, unbounded_int b) {
   // On peut comparer un char avec un char.
 
