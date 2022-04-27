@@ -17,6 +17,11 @@ void testSTR2Int(char* e){
   afficher_unb_int(res);
 }
 
+void testInt2STR(char* e){
+  printf("Test int2str(str2int()) de \"%s\"\n",e);
+  printf("Resultat obtenu: \"%s\"\n",unbounded_int2string(string2unbounded_int(e)));
+}
+
 int main(void) {
   testSTR2Int("+1234");
   
@@ -41,5 +46,10 @@ int main(void) {
 
   testSTR2Int("1000");
 
+  testInt2STR("-4543676543298");
+  testInt2STR(NULL);
+  testInt2STR("");
+  testInt2STR("+103");
+  testInt2STR("-000");
   return 0;
 }

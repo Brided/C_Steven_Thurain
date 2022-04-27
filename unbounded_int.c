@@ -22,6 +22,12 @@ static chiffre *init_chiffre(char c) {
   return res;
 }
 
+static int nullouvide(unbounded_int* ui){
+  if(ui==NULL) return 1;
+  if(ui->len==0) return 2;
+  else return 0;
+}
+
 static void ajouter_chiffre_debut(unbounded_int *nbr, char c) {
   chiffre *ajout = init_chiffre(c);
   if(ajout==NULL){
@@ -120,6 +126,30 @@ unbounded_int string2unbounded_int(const char *e) {
     ajouter_chiffre_fin(&res, *(intE + count));
     count++;
   }
+
+  return res;
+}
+
+char* unbounded_int2string(unbounded_int i){
+  if(nullouvide(&i)!=0) return NULL;
+  int len=i.len;
+
+  char* res=malloc(sizeof(char)*(len+1));
+  if(res==NULL){
+    perror("error in unbounded_int2string/malloc\n");
+    return NULL;
+  }
+
+  res[0]=i.signe;
+  int count=1;
+  chiffre* iter=i.premier;
+  while(iter!=NULL){
+    res[count]=iter->c;
+    iter=iter->suivant;
+    count++;
+  }
+
+  if(len!=(count-1)) printf("Warning: unbounded_int2string length et nb de chiffres comptés sont différents: length:%d,count:%d\n",len,(count-1));
 
   return res;
 }
