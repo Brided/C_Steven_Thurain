@@ -54,8 +54,10 @@ static void ajouter_chiffre_fin(unbounded_int *nbr, char c) {
     return;
   }
   if (nbr->premier == NULL && nbr->dernier == NULL) {
-    nbr->premier = ajout;
-    nbr->dernier = ajout;
+    if (c != '0') {
+      nbr->premier = ajout;
+      nbr->dernier = ajout;
+    }
   } else {
     ajout->precedent = nbr->dernier;
     nbr->dernier->suivant = ajout;
@@ -87,8 +89,8 @@ char* getInt(const char* e) {
     if(len>1) i++;
     else return NULL;
   }
-  
-  while(i<len){    
+
+  while(i<len){
     if(isdigit(*(e+i))==0){
       return NULL;
     }
@@ -107,13 +109,13 @@ char* getInt(const char* e) {
 }
 
 unbounded_int string2unbounded_int(const char *e) {
-  unbounded_int res = init_unb_int();  
+  unbounded_int res = init_unb_int();
   if(e==NULL || strlen(e)==0){
     printf("String entré NULL ou vide.\n");
     res.signe='*';
     return res;
   }
-  char* intE=getInt(e);    
+  char* intE=getInt(e);
   if(intE==NULL){
     printf("Entier pas trouvée: %s\n",e);
     res.signe='*';
@@ -122,7 +124,7 @@ unbounded_int string2unbounded_int(const char *e) {
   printf("Entier détecté: %s\n",intE);
 
   int length=strlen(intE);
-  int count = 0;  
+  int count = 0;
 
   if (*e == '+' || *e == '-') {
     res.signe = *e;
@@ -169,7 +171,7 @@ unbounded_int ll2unbounded_int(long long i) {
     i *= -1;
   }
 
-  while (i > 10) {
+  while (i > 0) {
     nb = i % 10;
     i /= 10;
 
@@ -179,6 +181,7 @@ unbounded_int ll2unbounded_int(long long i) {
   return res;
 }
 
+//<<<<<<< HEAD
 unbounded_int unbounded_int_somme(unbounded_int a, unbounded_int b){
   unbounded_int res=init_unb_int();
   if(nullouvide(&a)!=0 || nullouvide(&b)!=0) return res;
@@ -303,4 +306,44 @@ unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b){
     (res.premier)->precedent=NULL;
   }
   return res;
+}
+
+
+int unbounded_int_cmp_unbounded_int(unbounded_int a, unbounded_int b) {
+  // On peut comparer un char avec un char.
+
+  if (a.signe != b.signe) {
+    if(a.signe == '-') {
+      return -1;
+    } else {
+      return 1;
+    }
+  }
+
+  int signe = (a.signe == '-')?-1:1;
+
+  if (a.len != b.len) {
+    if (a.len < b.len) {
+      return -1 * signe;
+    } else {
+      return 1 * signe;
+    }
+  }
+
+  chiffre *chA = a.premier;
+  chiffre *chB = b.premier;
+
+  while (chA->c == chB->c && chA->suivant != NULL && chB->suivant != NULL) {
+    chA = chA->suivant;
+    chB = chB->suivant;
+    printf("%c %c\n", chA->c, chB->c);
+  }
+
+  if (chA->c < chB->c) {
+    return -1 * signe;
+  } else if (chA->c > chB->c) {
+    return 1 * signe;
+  } else {
+    return 0;
+  }
 }

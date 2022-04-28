@@ -4,6 +4,7 @@
 
 void afficher_unb_int(unbounded_int aff) {
   printf("longueur: %ld\n", aff.len);
+  printf("signe: %c\n", aff.signe);
   putchar(aff.signe);
   for (chiffre *e = aff.premier; e != NULL; e = e->suivant) {
     putchar(e->c);
@@ -13,7 +14,7 @@ void afficher_unb_int(unbounded_int aff) {
 
 void testSTR2Int(char* e){
   printf("\nString: %s\n",e);
-  unbounded_int res = string2unbounded_int(e);  
+  unbounded_int res = string2unbounded_int(e);
   afficher_unb_int(res);
   printf("\n");
 }
@@ -69,16 +70,34 @@ void testDiff(char* e1, char* e2){
   printf("\n");
 }
 
+void testCMP(char* e1, char* e2){
+  printf("Test comparaison %s==%s ?\n",e1,e2);
+  unbounded_int nb1 = string2unbounded_int(e1);
+  unbounded_int nb2 = string2unbounded_int(e2);
+  if(nb1.signe=='*'){
+    printf("Problème avec \"%s\", arrêt du comparaison.\n",e1);
+    return;
+  }
+  if(nb2.signe=='*'){
+    printf("Problème avec \"%s\", arrêt du comparaison.\n",e2);
+    return;
+  }
+
+  int res=unbounded_int_cmp_unbounded_int(nb1,nb2);
+  printf("Resultat: %d\n",res);
+  printf("\n");
+}
+
 int main(void) {
   testSTR2Int("+1234");
-  
+
   testSTR2Int("-123");
 
   unbounded_int trois = ll2unbounded_int(-11111222223LL);
   afficher_unb_int(trois);
-  
+
   testSTR2Int("-");
-	      
+
   testSTR2Int("00000");
 
   testSTR2Int("-0001845d");
@@ -87,7 +106,7 @@ int main(void) {
 
   testSTR2Int(NULL);
 
-  testSTR2Int("*054");  
+  testSTR2Int("*054");
 
   testSTR2Int("0001");
 
@@ -120,5 +139,11 @@ int main(void) {
   testDiff("+100","-10");
   testDiff("-1","+10");
   testDiff("-100","+10");
+
+  testCMP("-100","-100");
+  testCMP("+100","-100");
+  testCMP("-1000","-100");
+  testCMP("-10001","-10002");
+
   return 0;
 }
