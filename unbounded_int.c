@@ -70,7 +70,7 @@ static void ajouter_chiffre_fin(unbounded_int *nbr, char c) {
   Retourne NULL si le char* entré e contient des caractères autre que des chiffres (à l'exception de '+' et '-' pour indiquer une signe), ou sinon, retourne char* *(e+start) où start est le premier index d'un chiffre différent de zero.
   Si e contient que des zeros, retourne le dernier 0 de e.
 
-  Exemple: "-0123"    -> 0123
+  Exemple: "-0123"    -> -123
            "00014803" -> 14803
            "*786"     -> NULL
            "+A123"    -> NULL

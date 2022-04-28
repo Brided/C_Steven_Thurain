@@ -40,3 +40,5 @@ unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b);
 // (8)
 unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b);
 
+// Fonctions auxiliaires
+char* getInt(const char* e);
