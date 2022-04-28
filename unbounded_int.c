@@ -25,6 +25,8 @@ static chiffre *init_chiffre(char c) {
 static int nullouvide(unbounded_int* ui){
   if(ui==NULL) return 1;
   if(ui->len==0) return 2;
+  if(ui->premier==NULL || ui->dernier==NULL) return 3;
+  if(ui->signe=='*') return 4;
   else return 0;
 }
 
@@ -47,6 +49,10 @@ static void ajouter_chiffre_debut(unbounded_int *nbr, char c) {
 
 static void ajouter_chiffre_fin(unbounded_int *nbr, char c) {
   chiffre *ajout = init_chiffre(c);
+  if(ajout==NULL){
+    nbr->signe='*';
+    return;
+  }
   if (nbr->premier == NULL && nbr->dernier == NULL) {
     nbr->premier = ajout;
     nbr->dernier = ajout;
@@ -173,4 +179,128 @@ unbounded_int ll2unbounded_int(long long i) {
   return res;
 }
 
+unbounded_int unbounded_int_somme(unbounded_int a, unbounded_int b){
+  unbounded_int res=init_unb_int();
+  if(nullouvide(&a)!=0 || nullouvide(&b)!=0) return res;
+  char asigne=a.signe;
+  char bsigne=b.signe;
+  if(asigne!=bsigne) return unbounded_int_difference(a,b);
+  res.signe=asigne;
 
+  chiffre* aiter=a.dernier;
+  chiffre* biter=b.dernier;
+  int somme=0;
+  int retenu=0;
+  int achiffre=0;
+  int bchiffre=0;
+
+  while(aiter!=NULL && biter!=NULL){
+    achiffre=aiter->c-'0';
+    bchiffre=biter->c-'0';
+
+    somme=achiffre+bchiffre+retenu;
+    retenu=somme/10;
+    ajouter_chiffre_debut(&res,(somme%10)+'0');
+    aiter=aiter->precedent;
+    biter=biter->precedent;
+  }
+
+  while(aiter!=NULL){
+    achiffre=aiter->c-'0';
+    somme=achiffre+retenu;
+    retenu=somme/10;
+    ajouter_chiffre_debut(&res,(somme%10)+'0');
+    aiter=aiter->precedent;
+  }
+
+  while(biter!=NULL){
+    bchiffre=biter->c-'0';
+    somme=bchiffre+retenu;
+    retenu=somme/10;
+    ajouter_chiffre_debut(&res,(somme%10)+'0');
+    biter=biter->precedent;
+  }
+
+  if(retenu!=0) ajouter_chiffre_debut(&res,retenu+'0');
+  return res;
+}
+
+
+unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b){
+  unbounded_int res=init_unb_int();
+  if(nullouvide(&a)!=0 || nullouvide(&b)!=0) return res;
+  char asigne=a.signe;
+  char bsigne=b.signe;
+  if(asigne!=bsigne){
+    b.signe=a.signe;
+    unbounded_int res=unbounded_int_somme(a,b);
+    if(a.signe=='+') b.signe='-';
+    else b.signe='+';
+    return res;
+  }
+  if(a.len<b.len){
+    unbounded_int res=unbounded_int_difference(b,a);
+    if(res.signe=='+') res.signe='-';
+    else res.signe='+';
+    return res;
+  }
+
+  chiffre* aiter=a.dernier;
+  chiffre* biter=b.dernier;
+  int somme=0;
+  int retenu=0;
+  int achiffre=0;
+  int bchiffre=0;
+  chiffre* firstNonZero=NULL;
+
+  while(aiter!=NULL && biter!=NULL){
+    achiffre=aiter->c-'0';
+    bchiffre=biter->c-'0';
+    //printf("%d,%d : ",achiffre,bchiffre);
+    somme=achiffre-bchiffre-retenu;
+    //printf("somme=%d,",somme);
+    if(somme<0){
+      somme=10+achiffre-(bchiffre+retenu);
+      retenu+=1;
+    }
+    else retenu=0;
+    //printf("ret=%d\n",retenu);
+    ajouter_chiffre_debut(&res,(somme%10)+'0');
+    if(somme%10!=0) firstNonZero=res.premier;
+    aiter=aiter->precedent;
+    biter=biter->precedent;
+  }
+
+  while(aiter!=NULL){
+    achiffre=aiter->c-'0';
+    //printf("a %d: ",achiffre);
+    somme=achiffre-retenu;
+    //printf("somme=%d,",somme);
+    if(somme<0){
+      somme=10+achiffre-retenu;
+      retenu+=1;
+    }
+    else retenu=0;
+    //printf("ret=%d\n",retenu);
+    ajouter_chiffre_debut(&res,(somme%10)+'0');
+    if(somme%10!=0) firstNonZero=res.premier;
+    aiter=aiter->precedent;
+  }
+
+  if(retenu>0){
+    ajouter_chiffre_debut(&res,retenu+'0');
+    if(bsigne=='+') res.signe='-';
+    else res.signe='+';
+  }
+  else res.signe=asigne;
+  
+  if(firstNonZero==NULL){
+    res.premier=res.dernier;
+    (res.dernier)->precedent=NULL;
+  }
+  else{
+    res.premier=firstNonZero;
+    (res.premier)->precedent=NULL;
+  }
+  return res;
+}

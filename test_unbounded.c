@@ -15,11 +15,58 @@ void testSTR2Int(char* e){
   printf("\nString: %s\n",e);
   unbounded_int res = string2unbounded_int(e);  
   afficher_unb_int(res);
+  printf("\n");
 }
 
 void testInt2STR(char* e){
   printf("Test int2str(str2int()) de \"%s\"\n",e);
-  printf("Resultat obtenu: \"%s\"\n",unbounded_int2string(string2unbounded_int(e)));
+  printf("Resultat obtenu: \"%s\"\n\n",unbounded_int2string(string2unbounded_int(e)));
+}
+
+void testSomme(char* e1, char* e2){
+  printf("Test somme entre %s et %s\n",e1,e2);
+  unbounded_int nb1 = string2unbounded_int(e1);
+  unbounded_int nb2 = string2unbounded_int(e2);
+  if(nb1.signe=='*'){
+    printf("Problème avec \"%s\", arrêt du somme.\n",e1);
+    return;
+  }
+  if(nb2.signe=='*'){
+    printf("Problème avec \"%s\", arrêt du somme.\n",e2);
+    return;
+  }
+
+  unbounded_int res=unbounded_int_somme(nb1,nb2);
+  if(res.len==0){
+    printf("Entrée int null ou vide détecté, arrêt du somme.\n");
+    return;
+  }
+  printf("Resultat: \n");
+  afficher_unb_int(res);
+  printf("\n");
+}
+
+void testDiff(char* e1, char* e2){
+  printf("Test différence %s-(%s)\n",e1,e2);
+  unbounded_int nb1 = string2unbounded_int(e1);
+  unbounded_int nb2 = string2unbounded_int(e2);
+  if(nb1.signe=='*'){
+    printf("Problème avec \"%s\", arrêt du soustrction.\n",e1);
+    return;
+  }
+  if(nb2.signe=='*'){
+    printf("Problème avec \"%s\", arrêt du soustraction.\n",e2);
+    return;
+  }
+
+  unbounded_int res=unbounded_int_difference(nb1,nb2);
+  if(res.len==0){
+    printf("Entrée int null ou vide détecté, arrêt du soustraction.\n");
+    return;
+  }
+  printf("Resultat: \n");
+  afficher_unb_int(res);
+  printf("\n");
 }
 
 int main(void) {
@@ -51,5 +98,27 @@ int main(void) {
   testInt2STR("");
   testInt2STR("+103");
   testInt2STR("-000");
+
+  testSomme("+1","+10");
+  testSomme("+100","+10");
+  testSomme("+10","+100");
+  testSomme("+1","+1");
+  testSomme("+1","+9999");
+  testSomme("+9999","+1");
+
+  testDiff("+1","+10");
+  testDiff("+100","+10");
+  testDiff("+10","+100");
+  testDiff("-1","-10");
+  testDiff("-100","-10");
+  testDiff("-10","-100");
+  testDiff("+1","+1");
+  testDiff("+1","+9999");
+  testDiff("+9999","+1");
+
+  testDiff("+1","-10");
+  testDiff("+100","-10");
+  testDiff("-1","+10");
+  testDiff("-100","+10");
   return 0;
 }
