@@ -89,27 +89,18 @@ void testCMP(char* e1, char* e2){
 }
 
 int main(void) {
-  testSTR2Int("+1234");
-
-  testSTR2Int("-123");
-
   unbounded_int trois = ll2unbounded_int(-11111222223LL);
   afficher_unb_int(trois);
 
+  testSTR2Int("+1234");
+  testSTR2Int("-123");
   testSTR2Int("-");
-
   testSTR2Int("00000");
-
   testSTR2Int("-0001845d");
-
   testSTR2Int("");
-
   testSTR2Int(NULL);
-
   testSTR2Int("*054");
-
   testSTR2Int("0001");
-
   testSTR2Int("1000");
 
   testInt2STR("-4543676543298");

@@ -1,5 +1,6 @@
-#include"unbounded_int.h"
 #include <ctype.h>
+
+#include"unbounded_int.h"
 
 static unbounded_int init_unb_int() {
   unbounded_int res;
@@ -296,7 +297,7 @@ unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b){
     else res.signe='+';
   }
   else res.signe=asigne;
-  
+
   if(firstNonZero==NULL){
     res.premier=res.dernier;
     (res.dernier)->precedent=NULL;
@@ -336,7 +337,6 @@ int unbounded_int_cmp_unbounded_int(unbounded_int a, unbounded_int b) {
   while (chA->c == chB->c && chA->suivant != NULL && chB->suivant != NULL) {
     chA = chA->suivant;
     chB = chB->suivant;
-    printf("%c %c\n", chA->c, chB->c);
   }
 
   if (chA->c < chB->c) {

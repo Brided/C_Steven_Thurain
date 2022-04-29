@@ -1,8 +1,9 @@
 #include<stdio.h>
 #include<assert.h>
-#include"unbounded_int.h"
 #include<string.h>
 #include<ctype.h>
+
+#include"unbounded_int.h"
 
 /*
   Cherche la chaine de charactère égale à searched. Retourne sa position si une telle chaine existe, -1 sinon.
@@ -27,7 +28,7 @@ typedef struct cellString{
   char* mot;
   int type;
   struct cellString* precedent;
-  struct cellString* suivant;  
+  struct cellString* suivant;
 } cellString;
 
 //struct contenant une expression, une liste de cellules/mots.
@@ -52,7 +53,7 @@ cellString* init_cellString(char* s,int t){
   res->type=t;
   res->precedent=NULL;
   res->suivant=NULL;
-  return res;  
+  return res;
 }
 
 exp* init_exp(){
@@ -112,13 +113,56 @@ int est_operation(char* v){
   else return 1;
 }
 
-
+void parse_line(char* line) {
+  printf("%s", line);
+}
 
 int main(int argc, char *argv[]) {
   /* code */
   int inputArgPos = search_args_options(argc, argv, "-i");
   int outputArgPos = search_args_options(argc, argv, "-o");
-  printf("%d\n", inputArgPos);
-  printf("%d\n", outputArgPos);
+  // printf("%d\n", inputArgPos);
+  // printf("%d\n", outputArgPos);
+
+  assert(inputArgPos + 1 != outputArgPos);
+  assert(outputArgPos + 1 != inputArgPos);
+
+  assert(inputArgPos + 1 != argc);
+  assert(outputArgPos + 1 != argc);
+
+  FILE *inputFile;
+  FILE *outputFile;
+
+  if (inputArgPos != -1) {
+    inputFile = fopen(argv[inputArgPos + 1], "r");
+    if(inputFile == NULL) {
+      printf("fichier %s non trouvé\n", argv[inputArgPos + 1]);
+      return 1;
+    }
+  } else {
+    inputFile = stdin;
+  }
+
+  if (outputArgPos != -1) {
+    outputFile = fopen(argv[outputArgPos + 1], "w");
+  } else {
+    outputFile = stdout;
+  }
+
+  char line[1024];
+
+  while (fgets(line, sizeof(line), inputFile)) {
+    parse_line(line);
+  }
+
+  // char *listeMots[] = {"556", "lala", "lala55", "la_la55"};
+  //
+  // for (int i = 0; i < 4; i++) {
+  //   printf("%s\n", listeMots[i]);
+  //   printf("%d\n\n", est_variable_entier(listeMots[i]));
+  // }
+  //
+  // printf("%d\n", est_operation("*"));
+
   return 0;
 }
