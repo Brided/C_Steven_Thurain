@@ -44,7 +44,7 @@ static void retirer_chiffre_debut(unbounded_int *nbr) {
 }
 
 static void retirer_zeros(unbounded_int *nbr) {
-  while (nbr->premier->c == '0') {
+  while (nbr->premier->c == '0' && nbr->len > 1) {
     retirer_chiffre_debut(nbr);
   }
 }
@@ -354,7 +354,6 @@ unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b) {
     }
     chCAB->c = r + '0';
   }
-
   retirer_zeros(&c);
   return c;
 }
