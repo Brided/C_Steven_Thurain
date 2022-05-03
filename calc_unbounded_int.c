@@ -37,6 +37,12 @@ typedef struct expression{
   cellString* dernier;
 } exp;
 
+//struct contenant un nom de variable et une valeur associée au nom de variable.
+typedef struct varStore{
+  char* nomVar;
+  int valeur;
+} varStore;
+
 int nullouvide_cellString(cellString* c){
   if(c==NULL || c->mot==NULL || strlen(c->mot)==0) return 1;
   return 0;
@@ -164,5 +170,7 @@ int main(int argc, char *argv[]) {
   //
   // printf("%d\n", est_operation("*"));
 
+  fclose(inputFile);
+  fclose(outputFile);
   return 0;
 }
