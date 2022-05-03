@@ -308,6 +308,39 @@ unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b){
   return res;
 }
 
+unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b) {
+  int resLen = a.len + b.len;
+  char c[resLen];
+  int r;
+
+  chiffre *chA;
+  chiffre *chB;
+
+  int i;
+  int j;
+
+  for (int i = 0; i < resLen; i++) {
+    c[i] = '0';
+  }
+
+  for (chB = b.dernier, j = 0; chB != NULL; chB = chB->precedent, j++) {
+    r = 0;
+    if (chB->c == '0') {
+      continue;
+    }
+    for (chA = a.dernier, i = 0; chA != NULL; chA = chA->precedent, i++) {
+      int v = (c[resLen-i-j-1] - '0') + (chA->c - '0') * (chB->c - '0') + r;
+      c[resLen-i-j-1] = (v % 10) + '0';
+      r = v / 10;
+    }
+    printf("%d\n", r);
+    c[resLen-j-a.len-1] = r + '0';
+  }
+
+  unbounded_int res = string2unbounded_int(c);
+
+  return res;
+}
 
 int unbounded_int_cmp_unbounded_int(unbounded_int a, unbounded_int b) {
   // On peut comparer un char avec un char.
@@ -399,7 +432,7 @@ int unbounded_int_cmp_ll(unbounded_int a, long long b) {
     return 1 * signe;
   }
 
-  // si ces valeurs seraient égaux ils searaient alors tout les deux '*'
+  // si ces valeurs seraient égaux ils seraient alors tout les deux '*'
   if (aChDiff != bChDiff) {
     if (aChDiff < bChDiff) {
       return -1 * signe;

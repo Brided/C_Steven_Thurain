@@ -70,6 +70,29 @@ void testDiff(char* e1, char* e2){
   printf("\n");
 }
 
+void testProd(char* e1, char* e2) {
+  printf("Test produit %s*%s\n",e1,e2);
+  unbounded_int nb1 = string2unbounded_int(e1);
+  unbounded_int nb2 = string2unbounded_int(e2);
+  if(nb1.signe=='*'){
+    printf("Problème avec \"%s\", arrêt du soustrction.\n",e1);
+    return;
+  }
+  if(nb2.signe=='*'){
+    printf("Problème avec \"%s\", arrêt du soustraction.\n",e2);
+    return;
+  }
+
+  unbounded_int res=unbounded_int_produit(nb1,nb2);
+  if(res.len==0){
+    printf("Entrée int null ou vide détecté, arrêt du produit.\n");
+    return;
+  }
+  printf("Resultat: \n");
+  afficher_unb_int(res);
+  printf("\n");
+}
+
 void testCmpIntInt(char* e1, char* e2){
   printf("Test comparaison %s==%s ?\n",e1,e2);
   unbounded_int nb1 = string2unbounded_int(e1);
@@ -156,6 +179,10 @@ int main(void) {
   testCmpIntLlong("-4444", -44424ll);
   testCmpIntLlong("123", 124ll);
   testCmpIntLlong("-323", -183ll);
+
+  testProd("20", "201");
+  testProd("333", "2");
+  testProd("456", "51566");
 
   return 0;
 }
