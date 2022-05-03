@@ -183,6 +183,7 @@ int main(void) {
   testProd("20", "201");
   testProd("333", "2");
   testProd("456", "51566");
+  testProd("4004", "2002");
 
   return 0;
 }

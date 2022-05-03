@@ -1,1 +1,11 @@
 Steven UNG 22004120
+
+Steven UNG
+
+Fonctions implémentées dans unbounded_int.c:
+  string2unbounded_int
+  ll2unbounded_int
+  unbounded_int2string
+  unbounded_int_produit
+  unbounded_int_cmp_unbounded_int
+  unbounded_int_cmp_ll

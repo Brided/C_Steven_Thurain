@@ -31,6 +31,24 @@ static int nullouvide(unbounded_int* ui){
   else return 0;
 }
 
+
+static void retirer_chiffre_debut(unbounded_int *nbr) {
+  if (nbr->premier == NULL && nbr->dernier == NULL) {
+    return;
+  } else {
+    chiffre *toFree = nbr->premier;
+    nbr->premier = nbr->premier->suivant;
+    nbr->premier->precedent = NULL;
+    free(toFree);
+  }
+}
+
+static void retirer_zeros(unbounded_int *nbr) {
+  while (nbr->premier->c == '0') {
+    retirer_chiffre_debut(nbr);
+  }
+}
+
 static void ajouter_chiffre_debut(unbounded_int *nbr, char c) {
   chiffre *ajout = init_chiffre(c);
   if(ajout==NULL){
@@ -309,37 +327,36 @@ unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b){
 }
 
 unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b) {
-  int resLen = a.len + b.len;
-  char c[resLen];
+  unbounded_int c = init_unb_int();
   int r;
-
   chiffre *chA;
   chiffre *chB;
+  chiffre *chC;
 
-  int i;
-  int j;
+  chiffre *chCAB;
 
-  for (int i = 0; i < resLen; i++) {
-    c[i] = '0';
-  }
+  ajouter_chiffre_debut(&c, '0');
 
-  for (chB = b.dernier, j = 0; chB != NULL; chB = chB->precedent, j++) {
+  for (chB = b.dernier, chC = c.premier; chB != NULL; chB = chB->precedent, chC = chC->precedent) {
     r = 0;
     if (chB->c == '0') {
       continue;
     }
-    for (chA = a.dernier, i = 0; chA != NULL; chA = chA->precedent, i++) {
-      int v = (c[resLen-i-j-1] - '0') + (chA->c - '0') * (chB->c - '0') + r;
-      c[resLen-i-j-1] = (v % 10) + '0';
+    chCAB = chC;
+    for (chA = a.dernier; chA != NULL; chA = chA->precedent) {
+      int v = (chCAB->c - '0') + (chA->c - '0') * (chB->c - '0') + r;
+      chCAB->c = (v % 10) + '0';
       r = v / 10;
+      if (chCAB->precedent == NULL) {
+        ajouter_chiffre_debut(&c, '0');
+      }
+      chCAB = chCAB->precedent;
     }
-    printf("%d\n", r);
-    c[resLen-j-a.len-1] = r + '0';
+    chCAB->c = r + '0';
   }
 
-  unbounded_int res = string2unbounded_int(c);
-
-  return res;
+  retirer_zeros(&c);
+  return c;
 }
 
 int unbounded_int_cmp_unbounded_int(unbounded_int a, unbounded_int b) {
