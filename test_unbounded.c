@@ -70,7 +70,7 @@ void testDiff(char* e1, char* e2){
   printf("\n");
 }
 
-void testCMP(char* e1, char* e2){
+void testCmpIntInt(char* e1, char* e2){
   printf("Test comparaison %s==%s ?\n",e1,e2);
   unbounded_int nb1 = string2unbounded_int(e1);
   unbounded_int nb2 = string2unbounded_int(e2);
@@ -84,6 +84,19 @@ void testCMP(char* e1, char* e2){
   }
 
   int res=unbounded_int_cmp_unbounded_int(nb1,nb2);
+  printf("Resultat: %d\n",res);
+  printf("\n");
+}
+
+void testCmpIntLlong(char* e1, long long ll2) {
+  printf("Test comparaison %s==%lld ?\n",e1,ll2);
+  unbounded_int nb1 = string2unbounded_int(e1);
+  if(nb1.signe=='*'){
+    printf("Problème avec \"%s\", arrêt du comparaison.\n",e1);
+    return;
+  }
+
+  int res=unbounded_int_cmp_ll(nb1,ll2);
   printf("Resultat: %d\n",res);
   printf("\n");
 }
@@ -131,10 +144,18 @@ int main(void) {
   testDiff("-1","+10");
   testDiff("-100","+10");
 
-  testCMP("-100","-100");
-  testCMP("+100","-100");
-  testCMP("-1000","-100");
-  testCMP("-10001","-10002");
+  testCmpIntInt("-100","-100");
+  testCmpIntInt("+100","-100");
+  testCmpIntInt("-1000","-100");
+  testCmpIntInt("-10001","-10002");
+
+  testCmpIntLlong("4444", 4444ll);
+  testCmpIntLlong("-1461114", -1461114ll);
+  testCmpIntLlong("4444", 4424ll);
+  testCmpIntLlong("4443444", 44244ll);
+  testCmpIntLlong("-4444", -44424ll);
+  testCmpIntLlong("123", 124ll);
+  testCmpIntLlong("-323", -183ll);
 
   return 0;
 }

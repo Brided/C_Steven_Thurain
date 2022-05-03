@@ -182,7 +182,6 @@ unbounded_int ll2unbounded_int(long long i) {
   return res;
 }
 
-//<<<<<<< HEAD
 unbounded_int unbounded_int_somme(unbounded_int a, unbounded_int b){
   unbounded_int res=init_unb_int();
   if(nullouvide(&a)!=0 || nullouvide(&b)!=0) return res;
@@ -321,6 +320,7 @@ int unbounded_int_cmp_unbounded_int(unbounded_int a, unbounded_int b) {
     }
   }
 
+  // Si le signe est négatif les retours sont opposés aux retours dans le cas du signe positifs.
   int signe = (a.signe == '-')?-1:1;
 
   if (a.len != b.len) {
@@ -346,4 +346,67 @@ int unbounded_int_cmp_unbounded_int(unbounded_int a, unbounded_int b) {
   } else {
     return 0;
   }
+}
+
+int unbounded_int_cmp_ll(unbounded_int a, long long b) {
+  // ...
+
+  char bSigne = (b < 0)?'-':'+';
+
+  if (a.signe != bSigne) {
+    if (a.signe == '-') {
+      return -1;
+    } else {
+      return 1;
+    }
+  }
+
+  // Si le signe est négatif les retours sont opposés aux retours dans le cas du signe positifs.
+  int signe = (bSigne == '-')?-1:1;
+  if (signe == -1) {
+    b *= -1;
+  }
+
+  char aChDiff = '*';
+  char bChDiff = '*';
+  chiffre *chA = a.dernier;
+
+  int nb;
+
+  while (b > 0 && chA != NULL) {
+    nb = b % 10;
+    b = b / 10;
+
+    if ('0' + nb != chA->c) {
+      // printf("%c %c différent\n", '0' + nb, chA->c);
+      aChDiff = chA->c;
+      bChDiff = '0' + nb;
+    }
+
+    chA = chA->precedent;
+  }
+
+  int finA = chA == NULL;
+  int finB = b == 0;
+
+  // printf("%s\n", (finA)?"A est à la fin":"A n'est pas à la fin");
+  // printf("%s\n", (finB)?"B est à la fin":"B n'est pas à la fin");
+  printf("%c %c premiers différents\n", aChDiff, bChDiff);
+
+  if (finA && !finB) {
+    return -1 * signe;
+  } else if (!finA && finB) {
+    return 1 * signe;
+  }
+
+  // si ces valeurs seraient égaux ils searaient alors tout les deux '*'
+  if (aChDiff != bChDiff) {
+    if (aChDiff < bChDiff) {
+      return -1 * signe;
+    } else {
+      return 1 * signe;
+    }
+  }
+
+  return 0;
 }

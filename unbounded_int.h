@@ -29,7 +29,7 @@ char *unbounded_int2string(unbounded_int i);
 int unbounded_int_cmp_unbounded_int(unbounded_int a, unbounded_int b);
 
 // (5)
-int unbounded_int_cmp_ll();
+int unbounded_int_cmp_ll(unbounded_int a, long long b);
 
 // (6)
 unbounded_int unbounded_int_somme(unbounded_int a, unbounded_int b);
