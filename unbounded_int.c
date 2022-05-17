@@ -39,6 +39,7 @@ static void retirer_chiffre_debut(unbounded_int *nbr) {
     nbr->premier = nbr->premier->suivant;
     nbr->premier->precedent = NULL;
     free(toFree);
+    nbr->len--;
   }
 }
 
@@ -72,10 +73,8 @@ static void ajouter_chiffre_fin(unbounded_int *nbr, char c) {
     return;
   }
   if (nbr->premier == NULL && nbr->dernier == NULL) {
-    if (c != '0') {
-      nbr->premier = ajout;
-      nbr->dernier = ajout;
-    }
+    nbr->premier = ajout;
+    nbr->dernier = ajout;
   } else {
     ajout->precedent = nbr->dernier;
     nbr->dernier->suivant = ajout;
@@ -331,7 +330,6 @@ unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b) {
   chiffre *chA;
   chiffre *chB;
   chiffre *chC;
-
   chiffre *chCAB;
 
   ajouter_chiffre_debut(&c, '0');

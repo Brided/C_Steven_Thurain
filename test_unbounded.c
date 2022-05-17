@@ -184,6 +184,8 @@ int main(void) {
   testProd("333", "2");
   testProd("456", "51566");
   testProd("4004", "2002");
+  testProd("1", "0");
+  testProd("-1", "0");
 
   return 0;
 }

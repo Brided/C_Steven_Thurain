@@ -99,7 +99,6 @@ varStore *var_operation(pile *p, char *o, char *v1, char op, char *v2) {
   varStore *var2 = search_var(p, v2);
 
   unbounded_int intRes;
-
   switch (op) {
     case '+':
       intRes = unbounded_int_somme(var1->valeur, var2->valeur);
@@ -124,7 +123,13 @@ varStore *var_operation(pile *p, char *o, char *v1, char op, char *v2) {
 
 void afficher_var(varStore *vs, FILE *outputFile) {
   fprintf(outputFile, "%s = ", vs->nomVar);
-  fputc(vs->valeur.signe, outputFile);
+  if (vs->valeur.len == 1 && vs->valeur.premier->c == '0') {
+    fprintf(outputFile, "0\n");
+    return;
+  }
+  if (vs->valeur.signe == '-') {
+    fputc(vs->valeur.signe, outputFile);
+  }
   for (chiffre *e = vs->valeur.premier; e != NULL; e = e->suivant) {
     fputc(e->c, outputFile);
   }
@@ -388,8 +393,7 @@ int main(int argc, char *argv[]) {
   }
 
   pile p1le = init_pile();
-
-  varStore *b = edit_var(&p1le, "b", string2unbounded_int("0000"));
+  varStore *b = edit_var(&p1le, "b", string2unbounded_int("2025"));
   varStore *c = edit_var(&p1le, "c", string2unbounded_int("-2"));
   varStore *a = search_var(&p1le, "a");
 
