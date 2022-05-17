@@ -31,7 +31,6 @@ static int nullouvide(unbounded_int* ui){
   else return 0;
 }
 
-
 static void retirer_chiffre_debut(unbounded_int *nbr) {
   if (nbr->premier == NULL && nbr->dernier == NULL) {
     return;
@@ -140,7 +139,7 @@ unbounded_int string2unbounded_int(const char *e) {
     res.signe='*';
     return res;
   }
-  printf("Entier détecté: %s\n",intE);
+  // printf("Entier détecté: %s\n",intE);
 
   int length=strlen(intE);
   int count = 0;
@@ -355,6 +354,9 @@ unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b) {
     chCAB->c = r + '0';
   }
   retirer_zeros(&c);
+  if (a.signe != b.signe) {
+    c.signe = '-';
+  }
   return c;
 }
 

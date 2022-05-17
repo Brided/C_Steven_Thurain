@@ -7,4 +7,4 @@ fable =-123
 fail = --123
 truce3 = + 123
 gui = 156 * truce
-print a
+print a print

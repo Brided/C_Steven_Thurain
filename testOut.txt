@@ -1,0 +1,6 @@
+truce = 
+b = 
+c = -2
+a = 
+d = -0
+truce = 

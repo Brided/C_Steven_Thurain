@@ -9,6 +9,7 @@
 #define NB_MAX_LINES 20
 #define NB_CHAR_LINE 1024
 #define NB_MAX_VARIABLES 1024
+#define PILE_RESIZE_TAUX 2/3
 
 /*
   Cherche la chaine de charactère égale à searched. Retourne sa position si une telle chaine existe, -1 sinon.
@@ -48,6 +49,108 @@ typedef struct varStore{
   unbounded_int valeur;
 } varStore;
 
+typedef struct pile {
+  int capacite;
+  int len;
+  varStore **variables;
+} pile;
+
+varStore *init_varStore(char *nomVar, char *string) {
+  varStore *res = malloc(sizeof(varStore));
+  res->nomVar = nomVar;
+  res->valeur = string2unbounded_int(string);
+  return res;
+}
+
+//cherche le varStore de nom string dans la pile p et le retourne si il existe,
+//sinon ajoute un varStore de valeur 0 à la pile et le retourne.
+varStore *search_var(pile *p, char *string) {
+  if (p->len == 0) {
+    varStore *res = init_varStore(string, "0");
+    p->variables[0] = res;
+    p->len++;
+    return res;
+  }
+  if (p->len )
+  for (int i = 0; i<p->len; i++) {
+    if (strcmp(p->variables[i]->nomVar, string) == 0) {
+      return (p->variables[i]);
+    }
+  }
+  varStore *res = init_varStore(string, "0");
+  p->variables[p->len] = res;
+  p->len++;
+  return res;
+}
+
+//cherche le varStore de nom string dans la pile p
+//met sa valeur à newInt et le retourne
+varStore *edit_var(pile *p, char *string, unbounded_int newInt) {
+  varStore *res = search_var(p, string);
+  res->valeur = newInt;
+  return res;
+}
+
+//cherche les valeurs de nom o, v1 et v2
+//effectue une opération de type op sur v1 et v2 et place le résultat dans outVar.
+varStore *var_operation(pile *p, char *o, char *v1, char op, char *v2) {
+  varStore *outVar = search_var(p, o);
+  varStore *var1 = search_var(p, v1);
+  varStore *var2 = search_var(p, v2);
+
+  unbounded_int intRes;
+
+  switch (op) {
+    case '+':
+      intRes = unbounded_int_somme(var1->valeur, var2->valeur);
+      outVar->valeur = intRes;
+      return outVar;
+
+    case '-':
+      intRes = unbounded_int_difference(var1->valeur, var2->valeur);
+      outVar->valeur = intRes;
+      return outVar;
+
+    case '*':
+      intRes = unbounded_int_produit(var1->valeur, var2->valeur);
+      outVar->valeur = intRes;
+      return outVar;
+
+    default:
+      printf("opération no reconnue\n");
+      return outVar;
+  }
+}
+
+void afficher_var(varStore *vs, FILE *outputFile) {
+  fprintf(outputFile, "%s = ", vs->nomVar);
+  fputc(vs->valeur.signe, outputFile);
+  for (chiffre *e = vs->valeur.premier; e != NULL; e = e->suivant) {
+    fputc(e->c, outputFile);
+  }
+  fprintf(outputFile, "\n");
+}
+
+//affiche la variable de nom printed dans la pile
+void afficher_pile_var(pile *p, char *printed, FILE *outputFile) {
+  varStore *vs = search_var(p, printed);
+  afficher_var(vs, outputFile);
+}
+
+pile init_pile() {
+  pile pile;
+  pile.capacite = NB_MAX_VARIABLES;
+  pile.len = 0;
+  pile.variables = malloc(sizeof(varStore*) * pile.capacite);
+  return pile;
+}
+
+pile resize_pile(pile pile, int newSize) {
+  pile.capacite = newSize;
+  pile.variables = realloc(pile.variables, sizeof(varStore*) * pile.capacite);
+  return pile;
+}
+
 int nullouvide_cellString(cellString* c){
   if(c==NULL || c->mot==NULL || strlen(c->mot)==0) return 1;
   return 0;
@@ -78,8 +181,6 @@ exp* init_exp(){
   return res;
 }
 
-
-
 void print_exp(exp* exp){
   if(exp==NULL) printf("exp null\n");
   else printf("exp:\n");
@@ -91,15 +192,12 @@ void print_exp(exp* exp){
   printf("\n");
 }
 
-
 int est_operation(char* v){
   if(v==NULL || strlen(v)!=1) return 0;
   if(*v=='+' || *v=='-' || *v=='*') return 1;
   if(*v=='=') return 2;
   else return 0;
 }
-
-
 
 /*
   Vérifie si la chaîne de caractère est éligible d'être le nom d'une variable ou un entier.
@@ -120,8 +218,8 @@ int est_variable_entier(char* v){
   int var=1;
   for(int i=0;i<strlen(v);i++){
     if(isdigit(v[i])==0){
-      if (v[i]=='-' && i==0){
-      }else if(isalpha(v[i])==0){
+      if ((v[i]=='-' || v[i]=='+') && i==0){
+      } else if(isalpha(v[i])==0){
         return 0;
       }
       else var=2;
@@ -186,7 +284,7 @@ int parse_line(char* readLine, char** putLine) {
       	copyMot(readLine,putLine[nbMots],i-l,i-1);
       	nbMots++;
       	l=0;
-      	printf("var_name: %s\n",putLine[nbMots-1]);
+      	// printf("var_name: %s\n",putLine[nbMots-1]);
       }
     }
 
@@ -267,7 +365,7 @@ int main(int argc, char *argv[]) {
     outputFile = stdout;
   }
 
-  varStore* pile[NB_MAX_VARIABLES];
+  pile memoire = init_pile();
   char line[NB_CHAR_LINE];
   exp* expressions[NB_MAX_LINES];
   int nbMots;
@@ -287,6 +385,20 @@ int main(int argc, char *argv[]) {
     printf("Ligne %d :\n",e);
     print_exp(expressions[e]);
     e++;
+  }
+
+  pile p1le = init_pile();
+
+  varStore *b = edit_var(&p1le, "b", string2unbounded_int("0000"));
+  varStore *c = edit_var(&p1le, "c", string2unbounded_int("-2"));
+  varStore *a = search_var(&p1le, "a");
+
+  varStore *d = var_operation(&p1le, "d", "b", '*', "c");
+
+  afficher_pile_var(&p1le, "truce", outputFile);
+
+  for (int i = 0; i < p1le.len; i++) {
+    afficher_var(p1le.variables[i], outputFile);
   }
 
   // char *listeMots[] = {"556", "lala", "lala55", "la_la55"};
