@@ -1,6 +1,2 @@
-truce = 
-b = 
-c = -2
-a = 
-d = -0
-truce = 
+a = 1
+truce3 = 123

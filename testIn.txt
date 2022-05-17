@@ -5,6 +5,8 @@ d= 2
 e =5
 fable =-123
 fail = --123
-truce3 = + 123
+truce3 = +123
+
 gui = 156 * truce
-print a print
+print a
+print truce3

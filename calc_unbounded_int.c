@@ -43,124 +43,6 @@ typedef struct expression{
   cellString* dernier;
 } exp;
 
-//struct contenant un nom de variable et une valeur associée au nom de variable.
-typedef struct varStore{
-  char* nomVar;
-  unbounded_int valeur;
-} varStore;
-
-typedef struct pile {
-  int capacite;
-  int len;
-  varStore **variables;
-} pile;
-
-varStore *init_varStore(char *nomVar, char *string) {
-  varStore *res = malloc(sizeof(varStore));
-  res->nomVar = nomVar;
-  res->valeur = string2unbounded_int(string);
-  return res;
-}
-
-//cherche le varStore de nom string dans la pile p et le retourne si il existe,
-//sinon ajoute un varStore de valeur 0 à la pile et le retourne.
-varStore *search_var(pile *p, char *string) {
-  if (p->len == 0) {
-    varStore *res = init_varStore(string, "0");
-    p->variables[0] = res;
-    p->len++;
-    return res;
-  }
-  if (p->len )
-  for (int i = 0; i<p->len; i++) {
-    if (strcmp(p->variables[i]->nomVar, string) == 0) {
-      return (p->variables[i]);
-    }
-  }
-  varStore *res = init_varStore(string, "0");
-  p->variables[p->len] = res;
-  p->len++;
-  return res;
-}
-
-//cherche le varStore de nom string dans la pile p
-//met sa valeur à newInt et le retourne
-varStore *edit_var(pile *p, char *string, unbounded_int newInt) {
-  varStore *res = search_var(p, string);
-  res->valeur = newInt;
-  return res;
-}
-
-//cherche les valeurs de nom o, v1 et v2
-//effectue une opération de type op sur v1 et v2 et place le résultat dans outVar.
-varStore *var_operation(pile *p, char *o, char *v1, char op, char *v2) {
-  varStore *outVar = search_var(p, o);
-  varStore *var1 = search_var(p, v1);
-  varStore *var2 = search_var(p, v2);
-
-  unbounded_int intRes;
-  switch (op) {
-    case '+':
-      intRes = unbounded_int_somme(var1->valeur, var2->valeur);
-      outVar->valeur = intRes;
-      return outVar;
-
-    case '-':
-      intRes = unbounded_int_difference(var1->valeur, var2->valeur);
-      outVar->valeur = intRes;
-      return outVar;
-
-    case '*':
-      intRes = unbounded_int_produit(var1->valeur, var2->valeur);
-      outVar->valeur = intRes;
-      return outVar;
-
-    default:
-      printf("opération no reconnue\n");
-      return outVar;
-  }
-}
-
-void afficher_var(varStore *vs, FILE *outputFile) {
-  fprintf(outputFile, "%s = ", vs->nomVar);
-  if (vs->valeur.len == 1 && vs->valeur.premier->c == '0') {
-    fprintf(outputFile, "0\n");
-    return;
-  }
-  if (vs->valeur.signe == '-') {
-    fputc(vs->valeur.signe, outputFile);
-  }
-  for (chiffre *e = vs->valeur.premier; e != NULL; e = e->suivant) {
-    fputc(e->c, outputFile);
-  }
-  fprintf(outputFile, "\n");
-}
-
-//affiche la variable de nom printed dans la pile
-void afficher_pile_var(pile *p, char *printed, FILE *outputFile) {
-  varStore *vs = search_var(p, printed);
-  afficher_var(vs, outputFile);
-}
-
-pile init_pile() {
-  pile pile;
-  pile.capacite = NB_MAX_VARIABLES;
-  pile.len = 0;
-  pile.variables = malloc(sizeof(varStore*) * pile.capacite);
-  return pile;
-}
-
-pile resize_pile(pile pile, int newSize) {
-  pile.capacite = newSize;
-  pile.variables = realloc(pile.variables, sizeof(varStore*) * pile.capacite);
-  return pile;
-}
-
-int nullouvide_cellString(cellString* c){
-  if(c==NULL || c->mot==NULL || strlen(c->mot)==0) return 1;
-  return 0;
-}
-
 cellString* init_cellString(char* s,int t){
   if(s==NULL || strlen(s)==0) return NULL;
   cellString* res=malloc(sizeof(cellString));
@@ -195,6 +77,134 @@ void print_exp(exp* exp){
     iter=iter->suivant;
   }
   printf("\n");
+}
+
+//struct contenant un nom de variable et une valeur associée au nom de variable.
+typedef struct varStore{
+  char* nomVar;
+  unbounded_int valeur;
+} varStore;
+
+typedef struct pile {
+  int capacite;
+  int len;
+  varStore **variables;
+} pile;
+
+pile init_pile() {
+  pile pile;
+  pile.capacite = NB_MAX_VARIABLES;
+  pile.len = 0;
+  pile.variables = malloc(sizeof(varStore*) * pile.capacite);
+  return pile;
+}
+
+pile *resize_pile(pile *pile, int newSize) {
+  pile->capacite = newSize;
+  pile->variables = realloc(pile->variables, sizeof(varStore*) * pile->capacite);
+  return pile;
+}
+
+varStore *init_varStore(char *nomVar, char *string) {
+  varStore *res = malloc(sizeof(varStore));
+  res->nomVar = nomVar;
+  res->valeur = string2unbounded_int(string);
+  return res;
+}
+
+//cherche le varStore de nom string dans la pile p et le retourne si il existe,
+//sinon ajoute un varStore de valeur 0 à la pile et le retourne.
+varStore *search_var(pile *p, char *string) {
+  if (p->len == 0) {
+    varStore *res = init_varStore(string, "0");
+    p->variables[0] = res;
+    p->len++;
+    return res;
+  }
+  if (p->len > p->capacite * PILE_RESIZE_TAUX) {
+    resize_pile(p, p->capacite * 2);
+  }
+  for (int i = 0; i<p->len; i++) {
+    if (strcmp(p->variables[i]->nomVar, string) == 0) {
+      return (p->variables[i]);
+    }
+  }
+  varStore *res = init_varStore(string, "0");
+  p->variables[p->len] = res;
+  p->len++;
+  return res;
+}
+
+//cherche le varStore de nom string dans la pile p
+//met sa valeur à newInt et le retourne
+varStore *edit_var(pile *p, char *string, unbounded_int newInt) {
+  varStore *res = search_var(p, string);
+  res->valeur = newInt;
+  return res;
+}
+
+unbounded_int getVarInt(pile *p, cellString *cell){
+  if (cell->type == 2) {
+    varStore *searched = search_var(p, cell->mot);
+    return searched->valeur;
+  } else if (cell->type == 1) {
+    return string2unbounded_int(cell->mot);
+  }
+  return string2unbounded_int("");
+}
+
+//cherche les valeurs de nom o, v1 et v2
+//effectue une opération de type op sur v1 et v2 et place le résultat dans outVar.
+varStore *var_operation(pile *p, char *o, unbounded_int var1, char op, unbounded_int var2) {
+  varStore *outVar = search_var(p, o);
+
+  unbounded_int intRes;
+  switch (op) {
+    case '+':
+      intRes = unbounded_int_somme(var1, var2);
+      outVar->valeur = intRes;
+      return outVar;
+
+    case '-':
+      intRes = unbounded_int_difference(var1, var2);
+      outVar->valeur = intRes;
+      return outVar;
+
+    case '*':
+      intRes = unbounded_int_produit(var1, var2);
+      outVar->valeur = intRes;
+      return outVar;
+
+    default:
+      printf("opération no reconnue\n");
+      return outVar;
+  }
+}
+
+void afficher_var(varStore *vs, FILE *outputFile) {
+  fprintf(outputFile, "%s = ", vs->nomVar);
+  if (vs->valeur.len == 1 && vs->valeur.premier->c == '0') {
+    fprintf(outputFile, "0\n");
+    return;
+  }
+  if (vs->valeur.signe == '-') {
+    fputc(vs->valeur.signe, outputFile);
+  }
+  for (chiffre *e = vs->valeur.premier; e != NULL; e = e->suivant) {
+    fputc(e->c, outputFile);
+  }
+  fprintf(outputFile, "\n");
+}
+
+//affiche la variable de nom printed dans la pile
+void afficher_pile_var(pile *p, char *printed, FILE *outputFile) {
+  varStore *vs = search_var(p, printed);
+  afficher_var(vs, outputFile);
+}
+
+int nullouvide_cellString(cellString* c){
+  if(c==NULL || c->mot==NULL || strlen(c->mot)==0) return 1;
+  return 0;
 }
 
 int est_operation(char* v){
@@ -334,8 +344,52 @@ int parse_line(char* readLine, char** putLine) {
   return nbMots;
 }
 
-void exec_exp(exp* exp) {
+unbounded_int parse_calcul(cellString *calcul) {
+  if (calcul != NULL) {
+    if (calcul->suivant == NULL) {
+      if (calcul->type == 1) {
+        return string2unbounded_int(calcul->mot);
+      }
+    }
+  }
+  return string2unbounded_int("*");
+}
 
+void exec_exp(pile *p, exp* exp, FILE *outputFile) {
+  cellString *premier = exp->premier;
+  if (premier == NULL) {
+    return;
+  }
+  cellString *second = premier->suivant;
+  if (second == NULL) {
+    fprintf(stderr, "expression trop courte\n");
+    return;
+  }
+  // printf("%s\n", premier->mot);
+
+  if (premier->type == 5) {
+    if (second->type == 2) {
+      afficher_pile_var(p, second->mot, outputFile);
+    } else {
+      fprintf(stderr, "argument print incorrect\n");
+    }
+    return;
+  }
+
+  else if (premier->type == 2 && second->type == 4) {
+    cellString *trois = second->suivant;
+    unbounded_int resCalc = parse_calcul(trois);
+
+    if (resCalc.signe == '*') {
+      fprintf(stderr, "instruction érronée\n");
+      return;
+    }
+
+    edit_var(p, premier->mot, resCalc);
+    return;
+  }
+
+  fprintf(stderr, "instruction érronée\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -387,22 +441,24 @@ int main(int argc, char *argv[]) {
       // printf("mot : %s\n",mots[i]);
       add_mot(expressions[e],mots[i],1);
     }
-    printf("Ligne %d :\n",e);
-    print_exp(expressions[e]);
+    // printf("Ligne %d :\n",e);
+    // print_exp(expressions[e]);
+    exec_exp(&memoire, expressions[e], outputFile);
     e++;
   }
 
-  pile p1le = init_pile();
-  varStore *b = edit_var(&p1le, "b", string2unbounded_int("2025"));
-  varStore *c = edit_var(&p1le, "c", string2unbounded_int("-2"));
-  varStore *a = search_var(&p1le, "a");
+  // pile p1le = init_pile();
+  // varStore *b = edit_var(&p1le, "b", string2unbounded_int("2025"));
+  // varStore *c = edit_var(&p1le, "c", string2unbounded_int("-2"));
+  // varStore *a = search_var(&p1le, "a");
+  //
+  // varStore *d = var_operation(&p1le, "d", "b", '*', "c");
+  //
+  // afficher_pile_var(&p1le, "truce", outputFile);
 
-  varStore *d = var_operation(&p1le, "d", "b", '*', "c");
-
-  afficher_pile_var(&p1le, "truce", outputFile);
-
-  for (int i = 0; i < p1le.len; i++) {
-    afficher_var(p1le.variables[i], outputFile);
+  printf("\nmemoire finale:\n");
+  for (int i = 0; i < memoire.len; i++) {
+    afficher_var(memoire.variables[i], stdout);
   }
 
   // char *listeMots[] = {"556", "lala", "lala55", "la_la55"};
