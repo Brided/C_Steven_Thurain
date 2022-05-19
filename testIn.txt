@@ -3,10 +3,19 @@ b=2
 c = 3
 d= 2
 e =5
-fable =-123
-fail = --123
+fable = -123
+   fail = 1 - -123
 truce3 = +123
 
-gui = 156 * truce
+gui = 156 * truce3
 print a
 print truce3
+print fable
+print e
+print gui
+
+print libraire5
+
+libraire5 = +5555 * -2
+
+print libraire5

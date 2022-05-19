@@ -1,2 +1,6 @@
 a = 1
 truce3 = 123
+fable = -123
+e = 5
+libraire5 = 0
+libraire5 = -11110

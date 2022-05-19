@@ -68,6 +68,21 @@ exp* init_exp(){
   return res;
 }
 
+exp* free_exp(exp* freed) {
+  cellString *cs = freed->premier;
+  cellString *suivant;
+  while (cs != NULL) {
+    suivant = cs->suivant;
+    cs->suivant = NULL;
+    cs->precedent = NULL;
+    free(cs);
+    cs = suivant;
+  }
+  free(freed);
+  freed = NULL;
+  return freed;
+}
+
 void print_exp(exp* exp){
   if(exp==NULL) printf("exp null\n");
   else printf("exp:\n");
@@ -153,31 +168,27 @@ unbounded_int getVarInt(pile *p, cellString *cell){
   return string2unbounded_int("");
 }
 
-//cherche les valeurs de nom o, v1 et v2
-//effectue une opération de type op sur v1 et v2 et place le résultat dans outVar.
-varStore *var_operation(pile *p, char *o, unbounded_int var1, char op, unbounded_int var2) {
-  varStore *outVar = search_var(p, o);
-
+//effectue une opération de type op sur v1 et v2 et retourne le résultat
+unbounded_int var_operation(pile *p, cellString *cell1, char op, cellString *cell2) {
+  unbounded_int var1 = getVarInt(p, cell1);
+  unbounded_int var2 = getVarInt(p, cell2);
   unbounded_int intRes;
   switch (op) {
     case '+':
       intRes = unbounded_int_somme(var1, var2);
-      outVar->valeur = intRes;
-      return outVar;
+      return intRes;
 
     case '-':
       intRes = unbounded_int_difference(var1, var2);
-      outVar->valeur = intRes;
-      return outVar;
+      return intRes;
 
     case '*':
       intRes = unbounded_int_produit(var1, var2);
-      outVar->valeur = intRes;
-      return outVar;
+      return intRes;
 
     default:
-      printf("opération no reconnue\n");
-      return outVar;
+      printf("opération non reconnue\n");
+      return intRes;
   }
 }
 
@@ -344,11 +355,21 @@ int parse_line(char* readLine, char** putLine) {
   return nbMots;
 }
 
-unbounded_int parse_calcul(cellString *calcul) {
-  if (calcul != NULL) {
-    if (calcul->suivant == NULL) {
-      if (calcul->type == 1) {
-        return string2unbounded_int(calcul->mot);
+unbounded_int parse_calcul(pile *p, cellString *calcul1) {
+  if (calcul1 != NULL) {
+    if (calcul1->suivant == NULL) {
+      if (calcul1->type == 1 || calcul1->type == 2) {
+        unbounded_int res = getVarInt(p, calcul1);
+        return res;
+      }
+    } else if (calcul1->suivant->type == 3) {
+      cellString *calcul2;
+      if ((calcul2 = calcul1->suivant->suivant) != NULL) {
+        if (calcul2->type == 1 || calcul2->type == 2){
+          char op = calcul1->suivant->mot[0];
+          unbounded_int res = var_operation(p, calcul1, op, calcul2);
+          return res;
+        }
       }
     }
   }
@@ -362,6 +383,7 @@ void exec_exp(pile *p, exp* exp, FILE *outputFile) {
   }
   cellString *second = premier->suivant;
   if (second == NULL) {
+    print_exp(exp);
     fprintf(stderr, "expression trop courte\n");
     return;
   }
@@ -371,6 +393,7 @@ void exec_exp(pile *p, exp* exp, FILE *outputFile) {
     if (second->type == 2) {
       afficher_pile_var(p, second->mot, outputFile);
     } else {
+      print_exp(exp);
       fprintf(stderr, "argument print incorrect\n");
     }
     return;
@@ -378,9 +401,10 @@ void exec_exp(pile *p, exp* exp, FILE *outputFile) {
 
   else if (premier->type == 2 && second->type == 4) {
     cellString *trois = second->suivant;
-    unbounded_int resCalc = parse_calcul(trois);
+    unbounded_int resCalc = parse_calcul(p, trois);
 
     if (resCalc.signe == '*') {
+      print_exp(exp);
       fprintf(stderr, "instruction érronée\n");
       return;
     }
@@ -389,6 +413,7 @@ void exec_exp(pile *p, exp* exp, FILE *outputFile) {
     return;
   }
 
+  print_exp(exp);
   fprintf(stderr, "instruction érronée\n");
 }
 
@@ -411,7 +436,7 @@ int main(int argc, char *argv[]) {
   if (inputArgPos != -1) {
     inputFile = fopen(argv[inputArgPos + 1], "r");
     if(inputFile == NULL) {
-      printf("fichier %s non trouvé\n", argv[inputArgPos + 1]);
+      fprintf(stderr, "fichier %s non trouvé\n", argv[inputArgPos + 1]);
       return 1;
     }
   } else {
@@ -444,7 +469,14 @@ int main(int argc, char *argv[]) {
     // printf("Ligne %d :\n",e);
     // print_exp(expressions[e]);
     exec_exp(&memoire, expressions[e], outputFile);
+    free_exp(expressions[e]);
     e++;
+    e%=NB_MAX_LINES;
+  }
+
+  printf("\nmemoire finale:\n");
+  for (int i = 0; i < memoire.len; i++) {
+    afficher_var(memoire.variables[i], stdout);
   }
 
   // pile p1le = init_pile();
@@ -455,11 +487,6 @@ int main(int argc, char *argv[]) {
   // varStore *d = var_operation(&p1le, "d", "b", '*', "c");
   //
   // afficher_pile_var(&p1le, "truce", outputFile);
-
-  printf("\nmemoire finale:\n");
-  for (int i = 0; i < memoire.len; i++) {
-    afficher_var(memoire.variables[i], stdout);
-  }
 
   // char *listeMots[] = {"556", "lala", "lala55", "la_la55"};
   // for (int i = 0; i < 4; i++) {
