@@ -19,3 +19,9 @@ print libraire5
 libraire5 = +5555 * -2
 
 print libraire5
+
+libert = -130 - 10
+print libert
+
+libert = -130 + 10
+print libert
