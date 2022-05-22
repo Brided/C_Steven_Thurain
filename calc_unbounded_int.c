@@ -370,7 +370,7 @@ int parse_line(char* readLine, charPile* putLine) {
       	  return -1;
       	}
 	copyMot(readLine,mot,i-l,i-1);
-	printf("deb %s\n",mot);
+	//printf("deb %s\n",mot);
       	add_charPile(putLine,mot,l+1);
       	nbMots++;
       	l=0;
@@ -388,7 +388,7 @@ int parse_line(char* readLine, charPile* putLine) {
       	    return -1;
       	  }
 	  copyMot(readLine,mot,i-l,i-1);
-	  printf("mid1 %s\n",mot);
+	  //printf("mid1 %s\n",mot);
 	  add_charPile(putLine,mot,l+1);
       	  nbMots++;
       	  l=0;
@@ -401,7 +401,7 @@ int parse_line(char* readLine, charPile* putLine) {
       	}
         mot[0]=c;
 	mot[1]='\0';
-	printf("mid2 %s\n",mot);
+	//printf("mid2 %s\n",mot);
 	add_charPile(putLine,mot,2);
       	nbMots++;
 	mot=NULL;
@@ -419,7 +419,7 @@ int parse_line(char* readLine, charPile* putLine) {
     //printf("len %d :\n",l);
     copyMot(readLine,mot,len-l-1,len-2);
     mot[l]='\0';
-    printf("fin %s\n",mot);    
+    //printf("fin %s\n",mot);    
     add_charPile(putLine,mot,l+1);    
     nbMots++;
   }  
@@ -550,7 +550,7 @@ int main(int argc, char *argv[]) {
     }
     expressions=init_exp();
     for(int i=0;i<nbMots && i<NB_MAX_MOTS;i++){
-      printf("mot : %s\n",get_charPile(&mots,i));
+      //printf("mot : %s\n",get_charPile(&mots,i));
       add_mot(expressions,get_charPile(&mots,i),1);
     }    
     //print_exp(expressions[e]);

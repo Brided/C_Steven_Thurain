@@ -400,7 +400,7 @@ unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b){
 
   while(aiter!=NULL){
     achiffre=aiter->c-'0';
-    printf("a %d: ",achiffre);
+    //printf("a %d: ",achiffre);
     somme=achiffre+retenu;
     //printf("somme=%d,",somme);
     if(somme<0){
