@@ -3,8 +3,9 @@
 #include"unbounded_int.h"
 
 void afficher_unb_int(unbounded_int aff) {
-  printf("longueur: %ld\n", aff.len);
-  printf("signe: %c\n", aff.signe);
+  printf("longueur: %ld  ", aff.len);
+  // printf("signe: %c  ", aff.signe);
+  printf("valeur: ");
   putchar(aff.signe);
   for (chiffre *e = aff.premier; e != NULL; e = e->suivant) {
     putchar(e->c);
@@ -24,6 +25,8 @@ void testInt2STR(char* e){
   printf("Resultat obtenu: \"%s\"\n\n",unbounded_int2string(string2unbounded_int(e)));
 }
 
+// fonctions pour tester les fonctions somme, difference et produit
+// indique si resultat erroné
 void testSomme(char* e1, char* e2){
   printf("Test somme entre %s et %s\n",e1,e2);
   unbounded_int nb1 = string2unbounded_int(e1);
@@ -36,14 +39,22 @@ void testSomme(char* e1, char* e2){
     printf("Problème avec \"%s\", arrêt du somme.\n",e2);
     return;
   }
+  char *remaining;
+  long long ll1 = strtol(e1, &remaining, 10);
+  long long ll2 = strtol(e2, &remaining, 10);
 
   unbounded_int res=unbounded_int_somme(nb1,nb2);
+  long long llres=ll1+ll2;
+  int isCorrect = !unbounded_int_cmp_ll(res, llres);
   if(res.len==0){
     printf("Entrée int null ou vide détecté, arrêt du somme.\n");
     return;
   }
-  printf("Resultat: \n");
+  printf("Resultat unbounded_int: \n");
   afficher_unb_int(res);
+  if (!isCorrect) {
+    fprintf(stderr, "Incorrect, attendu %lld\n", llres);
+  }
   printf("\n");
 }
 
@@ -59,14 +70,22 @@ void testDiff(char* e1, char* e2){
     printf("Problème avec \"%s\", arrêt du soustraction.\n",e2);
     return;
   }
+  char *remaining;
+  long long ll1 = strtol(e1, &remaining, 10);
+  long long ll2 = strtol(e2, &remaining, 10);
 
   unbounded_int res=unbounded_int_difference(nb1,nb2);
+  long long llres=ll1-ll2;
+  int isCorrect = !unbounded_int_cmp_ll(res, llres);
   if(res.len==0){
     printf("Entrée int null ou vide détecté, arrêt du soustraction.\n");
     return;
   }
   printf("Resultat: \n");
   afficher_unb_int(res);
+  if (!isCorrect) {
+    printf("Incorrect, attendu %lld\n", llres);
+  }
   printf("\n");
 }
 
@@ -82,14 +101,22 @@ void testProd(char* e1, char* e2) {
     printf("Problème avec \"%s\", arrêt du soustraction.\n",e2);
     return;
   }
+  char *remaining;
+  long long ll1 = strtol(e1, &remaining, 10);
+  long long ll2 = strtol(e2, &remaining, 10);
 
   unbounded_int res=unbounded_int_produit(nb1,nb2);
+  long long llres=ll1*ll2;
+  int isCorrect = !unbounded_int_cmp_ll(res, llres);
   if(res.len==0){
     printf("Entrée int null ou vide détecté, arrêt du produit.\n");
     return;
   }
   printf("Resultat: \n");
   afficher_unb_int(res);
+  if (!isCorrect) {
+    printf("Incorrect, attendu %lld\n", llres);
+  }
   printf("\n");
 }
 
@@ -147,6 +174,7 @@ int main(void) {
 
   testSomme("+1","+10");
   testSomme("+100","+10");
+  testSomme("+100","-10");
   testSomme("+10","+100");
   testSomme("+1","+1");
   testSomme("+1","+9999");
@@ -154,6 +182,7 @@ int main(void) {
 
   testDiff("+1","+10");
   testDiff("+100","+10");
+  testDiff("+100","-10");
   testDiff("+10","+100");
   testDiff("-1","-10");
   testDiff("-100","-10");
@@ -171,6 +200,8 @@ int main(void) {
   testCmpIntInt("+100","-100");
   testCmpIntInt("-1000","-100");
   testCmpIntInt("-10001","-10002");
+  testCmpIntInt("-10001","0");
+  testCmpIntInt("0","-10001");
 
   testCmpIntLlong("4444", 4444ll);
   testCmpIntLlong("-1461114", -1461114ll);
@@ -179,6 +210,9 @@ int main(void) {
   testCmpIntLlong("-4444", -44424ll);
   testCmpIntLlong("123", 124ll);
   testCmpIntLlong("-323", -183ll);
+  testCmpIntLlong("0", 0);
+  testCmpIntLlong("123", 0);
+  testCmpIntLlong("-123", 0);
 
   testProd("20", "201");
   testProd("333", "2");

@@ -31,6 +31,16 @@ static int nullouvide(unbounded_int* ui){
   else return 0;
 }
 
+static int iszero(unbounded_int* ui){
+  if (ui->len > 1) {
+    return 0;
+  }
+  if (ui->premier->c != '0') {
+    return 0;
+  }
+  return 1;
+}
+
 static void retirer_chiffre_debut(unbounded_int *nbr) {
   if (nbr->premier == NULL && nbr->dernier == NULL) {
     return;
@@ -325,6 +335,10 @@ unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b){
 }
 
 unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b) {
+  if (iszero(&a) || iszero(&b)) {
+    return string2unbounded_int("0");
+  }
+
   unbounded_int c = init_unb_int();
   int r;
   chiffre *chA;
@@ -401,10 +415,13 @@ int unbounded_int_cmp_ll(unbounded_int a, long long b) {
   // ...
 
   char bSigne = (b < 0)?'-':'+';
+  bSigne = (b == 0)?'0':bSigne;
 
   if (a.signe != bSigne) {
     if (a.signe == '-') {
       return -1;
+    } else if(bSigne == '0' && iszero(&a)) {
+      return 0;
     } else {
       return 1;
     }
@@ -440,7 +457,7 @@ int unbounded_int_cmp_ll(unbounded_int a, long long b) {
 
   // printf("%s\n", (finA)?"A est à la fin":"A n'est pas à la fin");
   // printf("%s\n", (finB)?"B est à la fin":"B n'est pas à la fin");
-  printf("%c %c premiers différents\n", aChDiff, bChDiff);
+  // printf("%c %c premiers différents\n", aChDiff, bChDiff);
 
   if (finA && !finB) {
     return -1 * signe;
