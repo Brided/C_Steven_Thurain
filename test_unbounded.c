@@ -243,7 +243,7 @@ long long testNb(long long inf, long long sup, int somme, int diff, int cmpunb, 
 	  continue;
 	}
 	if(unbounded_int_cmp_ll(d,resl)!=0){
-	  printf("Difference faux : %lld,%lld attendu:%lld,res:\n",i,j,resl);
+	  printf("Difference faux %d: %lld,%lld attendu:%lld,res:\n",unbounded_int_cmp_ll(d,resl)!=0,i,j,resl);
 	  afficher_unb_int(d);
 	  err++;
 	}
@@ -282,8 +282,8 @@ long long testNb(long long inf, long long sup, int somme, int diff, int cmpunb, 
 }
 
 int main(void) {
-  long long inf=-21;
-  long long sup=15;
+  long long inf=-100;
+  long long sup=100;
   printf("Tests de %lld a %lld:\n",inf,sup);
   printf("Nb d'erreurs:%lld\n",testNb(inf,sup,1,1,1,1,1));
 
