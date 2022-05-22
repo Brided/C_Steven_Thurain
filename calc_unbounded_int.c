@@ -5,7 +5,7 @@
 
 #include"unbounded_int.h"
 
-#define NB_MAX_MOTS 20
+#define NB_MAX_MOTS 8
 #define NB_CHAR_LINE 1024
 #define NB_MAX_VARIABLES 1024
 #define PILE_RESIZE_TAUX 2/3
@@ -117,7 +117,7 @@ charPile init_charPile(){
   charPile cp;
   cp.capacite=NB_MAX_MOTS;
   cp.len=0;
-  cp.strings=malloc(sizeof(char*)*NB_MAX_MOTS);
+  cp.strings=malloc(sizeof(char*)*cp.capacite);
   if(cp.strings==NULL) perror("init_charPile:malloc");
   return cp;
 }
@@ -128,11 +128,13 @@ charPile* resize_charPile(charPile* cp, int newSize){
   return cp;
 }
 
-void free_charPile(charPile* cp){
+void vider_charPile(charPile* cp){
   if(cp==NULL || cp->strings==NULL) return;
   for(int i=0;i<cp->len;i++){
     free(cp->strings[i]);
-  }  
+  }
+  free(cp->strings);
+  cp->len=0;
 }
 
 void add_charPile(charPile* cp, char* mot, int len){
