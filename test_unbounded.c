@@ -3,11 +3,15 @@
 #include"unbounded_int.h"
 
 void afficher_unb_int(unbounded_int aff) {
+  if(aff.signe=='*'){
+    printf("affichage impossible\n");
+    return;
+  }
   printf("longueur: %ld  ", aff.len);
   // printf("signe: %c  ", aff.signe);
   printf("valeur: ");
   putchar(aff.signe);
-  for (chiffre *e = aff.premier; e != NULL; e = e->suivant) {
+  for (chiffre *e = aff.premier; e != NULL; e = e->suivant) {    
     putchar(e->c);
   }
   printf("\n");
@@ -134,7 +138,7 @@ void testCmpIntInt(char* e1, char* e2){
   }
 
   int res=unbounded_int_cmp_unbounded_int(nb1,nb2);
-  printf("Resultat: %d\n",res);
+  printf("Resultat: %d\n",res);  
   printf("\n");
 }
 
@@ -151,7 +155,139 @@ void testCmpIntLlong(char* e1, long long ll2) {
   printf("\n");
 }
 
+long long testNb(long long inf, long long sup, int somme, int diff, int cmpunb, int cmpl, int mult){
+  if(somme==0 && diff==0 && cmpunb==0 && cmpl==0 && mult==0){
+    printf("Veuillez choisir ce que vous vouliez tester en mettant un valeur != 0 :\nsomme pour sommes,\ndiff pour difference,\ncmpunb pour comparaison  entre unbounded_int et unbounded_int,\ncmpl pour comparaison entre unbounded_int et long long,\nmult pour multiplication.\n");
+    return 0;
+  }
+
+  long long err=0;
+  int res=0;
+  long long resl=0;
+
+  unbounded_int ui;
+  unbounded_int uj;
+  unbounded_int s;
+  unbounded_int d;
+  unbounded_int m;
+  
+  for(long long i=inf;i<=sup;i++){
+    for(long long j=i;j<=sup;j++){
+      ui=ll2unbounded_int(i);
+      uj=ll2unbounded_int(j);
+      
+      if(ui.signe=='*'){
+	printf("Problème avec %lld, arrêt du comparaison.\n",i);
+	err++;
+	continue;
+      }
+      if(uj.signe=='*'){
+	printf("Problème avec %lld, arrêt du comparaison.\n",j);
+	err++;
+	continue;
+      }
+
+      /*
+      printf("//////");
+      printf("ui,uj:\n");
+      afficher_unb_int(ui);
+      afficher_unb_int(uj);
+      printf("\n");
+      */
+      
+      if(cmpunb!=0 || cmpl!=0){
+	res=0;
+	if(i<j) res=-1;
+	else if(i>j) res=1;
+	
+	if(cmpunb!=0 && unbounded_int_cmp_unbounded_int(ui,uj)!=res){
+	  printf("Comparaison unb/unb faux : %lld,%lld",i,j);
+	  err++;
+	}
+
+	if(cmpl!=0 && unbounded_int_cmp_ll(ui,j)!=res){
+	  printf("Comparaison unb/ll faux : %lld,%lld",i,j);
+	  err++;
+	}
+      }
+      
+      //printf("SOMME\n");
+      if(somme!=0){
+	resl=i+j;
+	s=unbounded_int_somme(ui,uj);
+	
+	if(s.signe=='*'){
+	  printf("Problème avec somme(%lld,%lld) arrêt du comparaison.\n",i,j);
+	  err++;
+	  continue;
+	}
+	if(unbounded_int_cmp_ll(s,resl)!=0){
+	  /*
+	  printf("ui,uj:\n");	  
+	  afficher_unb_int(ui);
+	  afficher_unb_int(uj);
+	  */
+	  printf("Somme faux : %lld,%lld attendu:%lld,res:\n",i,j,resl);	  
+	  afficher_unb_int(s);
+	  err++;
+	}
+      }
+
+      //printf("DIFF\n");
+      if(diff!=0){
+	resl=i-j;
+	d=unbounded_int_difference(ui,uj);
+	if(d.signe=='*'){
+	  printf("Problème avec diff(%lld,%lld) arrêt du comparaison.\n",i,j);
+	  err++;
+	  continue;
+	}
+	if(unbounded_int_cmp_ll(d,resl)!=0){
+	  printf("Difference faux : %lld,%lld attendu:%lld,res:\n",i,j,resl);
+	  afficher_unb_int(d);
+	  err++;
+	}
+      }
+      
+      //printf("MULT\n");
+      if(mult!=0){
+	resl=i*j;
+
+	/*
+	printf("ui,uj:\n");	  
+	afficher_unb_int(ui);
+	afficher_unb_int(uj);
+	*/
+	  
+	m=unbounded_int_produit(ui,uj);
+	if(m.signe=='*'){
+	  printf("Problème avec mult(%lld,%lld) arrêt du comparaison.\n",i,j);
+	  err++;
+	  continue;
+	}
+	if(unbounded_int_cmp_ll(m,resl)!=0){
+	  printf("Produit faux : %lld,%lld attendu:%lld,res:\n",i,j,resl);
+	  afficher_unb_int(m);
+	  err++;
+	}
+      }
+
+      /*
+      printf("\\\\\\");
+      printf("\nerr:%lld\n\n",err);
+      */
+    }
+  }
+  return err;
+}
+
 int main(void) {
+  long long inf=-21;
+  long long sup=15;
+  printf("Tests de %lld a %lld:\n",inf,sup);
+  printf("Nb d'erreurs:%lld\n",testNb(inf,sup,1,1,1,1,1));
+
+  /*
   unbounded_int trois = ll2unbounded_int(-11111222223LL);
   afficher_unb_int(trois);
 
@@ -221,5 +357,6 @@ int main(void) {
   testProd("1", "0");
   testProd("-1", "0");
 
+  */
   return 0;
 }

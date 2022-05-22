@@ -2,6 +2,21 @@
 
 #include"unbounded_int.h"
 
+void afficher(unbounded_int aff) {
+  if(aff.signe=='*'){
+    printf("affichage impossible\n");
+    return;
+  }
+  printf("longueur: %ld  ", aff.len);
+  // printf("signe: %c  ", aff.signe);
+  printf("valeur: ");
+  putchar(aff.signe);
+  for (chiffre *e = aff.premier; e != NULL; e = e->suivant) {    
+    putchar(e->c);
+  }
+  printf("\n");
+}
+
 static unbounded_int init_unb_int() {
   unbounded_int res;
   res.signe = '+';
@@ -198,6 +213,11 @@ unbounded_int ll2unbounded_int(long long i) {
     i *= -1;
   }
 
+  else if(i==0){
+    ajouter_chiffre_debut(&res,'0');
+    return res;
+  }
+  
   while (i > 0) {
     nb = i % 10;
     i /= 10;
@@ -208,12 +228,47 @@ unbounded_int ll2unbounded_int(long long i) {
   return res;
 }
 
+unbounded_int copy(unbounded_int src){
+  unbounded_int res=init_unb_int();
+  if(nullouvide(&src)!=0) return res;
+  res.signe=src.signe;
+  chiffre* iter=src.dernier;
+  while(iter!=NULL){
+    //printf("c:%c\n",iter->c);
+    ajouter_chiffre_debut(&res,(iter->c));
+    iter=iter->precedent;
+  }
+  //afficher(res);
+  return res;
+}
+
 unbounded_int unbounded_int_somme(unbounded_int a, unbounded_int b){
   unbounded_int res=init_unb_int();
   if(nullouvide(&a)!=0 || nullouvide(&b)!=0) return res;
   char asigne=a.signe;
   char bsigne=b.signe;
-  if(asigne!=bsigne) return unbounded_int_difference(a,b);
+  if(iszero(&a)!=0) return copy(b);
+  if(iszero(&b)!=0) return copy(a);
+  if(asigne!=bsigne){
+    unbounded_int res;
+    if(a.signe=='+'){
+      b.signe=a.signe;
+      res=unbounded_int_difference(a,b);
+    }
+    else{
+      a.signe=b.signe;
+      res=unbounded_int_difference(b,a);
+    }
+    /*
+    printf("uis:");
+    afficher(b);    
+    printf("ress:");
+    afficher(res);
+    */
+    if(a.signe=='+') b.signe='-';
+    else a.signe='-';
+    return res;
+  }
   res.signe=asigne;
 
   chiffre* aiter=a.dernier;
@@ -257,20 +312,51 @@ unbounded_int unbounded_int_somme(unbounded_int a, unbounded_int b){
 
 unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b){
   unbounded_int res=init_unb_int();
+  //afficher(res);
+  //printf("ERR");
+
+  //printf("\n\n");
   if(nullouvide(&a)!=0 || nullouvide(&b)!=0) return res;
+  /*
+  afficher(a);
+  afficher(b);
+  */
+  if(iszero(&a)!=0){
+    res=copy(b);
+    if(b.signe=='+') res.signe='-';
+    else res.signe='+';
+    return res;
+  }
+  if(iszero(&b)!=0) return copy(a);
   char asigne=a.signe;
   char bsigne=b.signe;
   if(asigne!=bsigne){
     b.signe=a.signe;
-    unbounded_int res=unbounded_int_somme(a,b);
-    if(a.signe=='+') b.signe='-';
-    else b.signe='+';
+    res=unbounded_int_somme(a,b);
+    
+    /*
+    printf("uid:");
+    afficher(b);
+    printf("resd:");
+    afficher(res);
+    */
+    b.signe=bsigne;
     return res;
   }
-  if(a.len<b.len){
+  if(a.signe=='-') a.signe='+';
+  if(b.signe=='-') b.signe='+';
+  if(a.len<b.len || unbounded_int_cmp_unbounded_int(a,b)==-1){
+    if(a.signe=='+') a.signe='-';
+    if(b.signe=='+') b.signe='-';
     unbounded_int res=unbounded_int_difference(b,a);
-    if(res.signe=='+') res.signe='-';
-    else res.signe='+';
+    /*
+    printf("uid2:");
+    afficher(b);
+    printf("resd2:");
+    afficher(res);
+    */
+    a.signe=asigne;
+    b.signe=bsigne;
     return res;
   }
 
@@ -282,15 +368,22 @@ unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b){
   int bchiffre=0;
   chiffre* firstNonZero=NULL;
 
+  /*
+  printf("a:");
+  afficher(a);
+  printf("b:");
+  afficher(b);
+  */
+  
   while(aiter!=NULL && biter!=NULL){
     achiffre=aiter->c-'0';
     bchiffre=biter->c-'0';
     //printf("%d,%d : ",achiffre,bchiffre);
-    somme=achiffre-bchiffre-retenu;
+    somme=achiffre-bchiffre+retenu;
     //printf("somme=%d,",somme);
     if(somme<0){
-      somme=10+achiffre-(bchiffre+retenu);
-      retenu+=1;
+      somme=10+achiffre-bchiffre+retenu;
+      retenu-=1;
     }
     else retenu=0;
     //printf("ret=%d\n",retenu);
@@ -303,11 +396,11 @@ unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b){
   while(aiter!=NULL){
     achiffre=aiter->c-'0';
     //printf("a %d: ",achiffre);
-    somme=achiffre-retenu;
+    somme=achiffre+retenu;
     //printf("somme=%d,",somme);
     if(somme<0){
-      somme=10+achiffre-retenu;
-      retenu+=1;
+      somme=10+achiffre+retenu;
+      retenu-=1;
     }
     else retenu=0;
     //printf("ret=%d\n",retenu);
@@ -316,13 +409,9 @@ unbounded_int unbounded_int_difference(unbounded_int a, unbounded_int b){
     aiter=aiter->precedent;
   }
 
-  if(retenu>0){
-    ajouter_chiffre_debut(&res,retenu+'0');
-    if(bsigne=='+') res.signe='-';
-    else res.signe='+';
-  }
-  else res.signe=asigne;
+  res.signe=asigne;
 
+  
   if(firstNonZero==NULL){
     res.premier=res.dernier;
     (res.dernier)->precedent=NULL;
@@ -338,7 +427,6 @@ unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b) {
   if (iszero(&a) || iszero(&b)) {
     return string2unbounded_int("0");
   }
-
   unbounded_int c = init_unb_int();
   int r;
   chiffre *chA;
@@ -351,6 +439,9 @@ unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b) {
   for (chB = b.dernier, chC = c.premier; chB != NULL; chB = chB->precedent, chC = chC->precedent) {
     r = 0;
     if (chB->c == '0') {
+      if (chC->precedent == NULL) {
+        ajouter_chiffre_debut(&c, '0');
+      }
       continue;
     }
     chCAB = chC;
@@ -417,7 +508,7 @@ int unbounded_int_cmp_ll(unbounded_int a, long long b) {
   char bSigne = (b < 0)?'-':'+';
   bSigne = (b == 0)?'0':bSigne;
 
-  if (a.signe != bSigne) {
+  if (a.signe != bSigne) {    
     if (a.signe == '-') {
       return -1;
     } else if(bSigne == '0' && iszero(&a)) {
