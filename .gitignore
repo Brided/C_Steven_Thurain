@@ -1,3 +1,4 @@
 *.o
+*.tar.gz
 test_unbounded
 calc_unbounded_int
