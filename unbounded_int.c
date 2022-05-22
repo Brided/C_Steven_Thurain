@@ -466,6 +466,10 @@ unbounded_int unbounded_int_produit(unbounded_int a, unbounded_int b) {
 int unbounded_int_cmp_unbounded_int(unbounded_int a, unbounded_int b) {
   // On peut comparer un char avec un char.
 
+  if (iszero(&a) && iszero(&b)) {
+    return 0;
+  }
+
   if (a.signe != b.signe) {
     if(a.signe == '-') {
       return -1;
