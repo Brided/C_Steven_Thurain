@@ -6,7 +6,6 @@
 #include"unbounded_int.h"
 
 #define NB_MAX_MOTS 20
-#define NB_MAX_LINES 20
 #define NB_CHAR_LINE 1024
 #define NB_MAX_VARIABLES 1024
 #define PILE_RESIZE_TAUX 2/3
@@ -68,7 +67,7 @@ exp* init_exp(){
   return res;
 }
 
-exp* free_exp(exp* freed) {
+exp* vider_exp(exp* freed) {
   cellString *cs = freed->premier;
   cellString *suivant;
   while (cs != NULL) {
@@ -78,8 +77,10 @@ exp* free_exp(exp* freed) {
     free(cs);
     cs = suivant;
   }
-  free(freed);
-  freed = NULL;
+  //free(freed);
+  //freed = NULL;
+  freed->premier=NULL;
+  freed->dernier=NULL;
   return freed;
 }
 
@@ -106,11 +107,54 @@ typedef struct pile {
   varStore **variables;
 } pile;
 
+typedef struct charPile{
+  int capacite;
+  int len;
+  char** strings;
+} charPile;
+
+charPile init_charPile(){
+  charPile cp;
+  cp.capacite=NB_MAX_MOTS;
+  cp.len=0;
+  cp.strings=malloc(sizeof(char*)*NB_MAX_MOTS);
+  if(cp.strings==NULL) perror("init_charPile:malloc");
+  return cp;
+}
+
+charPile* resize_charPile(charPile* cp, int newSize){
+  cp->capacite=newSize;
+  cp->strings=realloc(cp->strings,sizeof(char*)*newSize);
+  return cp;
+}
+
+void free_charPile(charPile* cp){
+  if(cp==NULL || cp->strings==NULL) return;
+  for(int i=0;i<cp->len;i++){
+    free(cp->strings[i]);
+  }  
+}
+
+void add_charPile(charPile* cp, char* mot, int len){
+  if(cp==NULL || cp->strings==NULL || mot==NULL || strcmp(mot,"")==0) return;
+  int cplen=cp->len;
+  if( ((cplen+1)/(cp->capacite))>PILE_RESIZE_TAUX) resize_charPile(cp,cp->capacite*2);
+  (cp->strings)[cplen]=malloc(len);
+  memmove((cp->strings)[cplen],mot,len);
+  (cp->len)=(cp->len)+1;
+}
+
+char* get_charPile(charPile* cp,int i){
+  if(cp==NULL || cp->strings==NULL || i>=cp->len) return NULL;
+  return (cp->strings)[i];
+}
+
 pile init_pile() {
   pile pile;
   pile.capacite = NB_MAX_VARIABLES;
   pile.len = 0;
   pile.variables = malloc(sizeof(varStore*) * pile.capacite);
+  if(pile.variables==NULL) perror("init_pile:malloc");
   return pile;
 }
 
@@ -118,6 +162,20 @@ pile *resize_pile(pile *pile, int newSize) {
   pile->capacite = newSize;
   pile->variables = realloc(pile->variables, sizeof(varStore*) * pile->capacite);
   return pile;
+}
+
+void free_varStore(varStore* v){
+  if(v==NULL) return;
+  if(v->nomVar!=NULL) free(v->nomVar);
+  free(v);
+}
+
+void free_pile(pile* p){
+  if(p==NULL) return;
+  for(int i=0;i<p->len;i++){
+    //printf("freep(%d)",i);
+    free_varStore(p->variables[i]);
+  }
 }
 
 varStore *init_varStore(char *nomVar, char *string) {
@@ -292,66 +350,77 @@ void add_mot(exp* exp, char* mot,int fin){
   exp->premier=c;
 }
 
-int parse_line(char* readLine, char** putLine) {
+int parse_line(char* readLine, charPile* putLine) {
   int len=strlen(readLine);
   int l=0;
   int nbMots=0;
-  for(int i=0;i<len;i++){
+  char* mot;
+  
+  for(int i=0;i<len-1;i++){
     char c=readLine[i];
     char d=readLine[i+1];
 
     if(isblank(c)){
       if(l>0){
-      	putLine[nbMots]=malloc(sizeof(char)*(l+1));
-      	if(putLine[nbMots]==NULL){
+      	mot=malloc(sizeof(char)*(l+1));
+      	if(mot==NULL){
       	  perror("parse_line/malloc\n");
       	  return -1;
       	}
-      	copyMot(readLine,putLine[nbMots],i-l,i-1);
+	copyMot(readLine,mot,i-l,i-1);
+	printf("deb %s\n",mot);
+      	add_charPile(putLine,mot,l+1);
       	nbMots++;
       	l=0;
-      	// printf("var_name: %s\n",putLine[nbMots-1]);
+	mot=NULL;
       }
     }
 
     else{
-      if(c=='=' || (c=='-' && est_operation(&d) != 0) || est_operation(&c)!=0){
+      //printf("c : %c,%d :\n",c,l);
+      if(c=='=' || (i!=len-1 && c=='-' && est_operation(&d) != 0) || est_operation(&c)!=0){
       	if(l>0){
-      	  putLine[nbMots]=malloc(sizeof(char)*(l+1));
-      	  if(putLine[nbMots]==NULL){
+      	  mot=malloc(sizeof(char)*(l+1));
+      	  if(mot==NULL){
       	    perror("parse_line/malloc\n");
       	    return -1;
       	  }
-      	  copyMot(readLine,putLine[nbMots],i-l,i-1);
+	  copyMot(readLine,mot,i-l,i-1);
+	  printf("mid1 %s\n",mot);
+	  add_charPile(putLine,mot,l+1);
       	  nbMots++;
       	  l=0;
-      	  //printf("%s\n",putLine[nbMots-1]);
+	  mot=NULL;
       	}
-      	putLine[nbMots]=malloc(sizeof(char)*2);
-      	if(putLine[nbMots]==NULL){
+      	mot=malloc(sizeof(char)*2);
+      	if(mot==NULL){
       	  perror("parse_line/malloc\n");
       	  return -1;
       	}
-        putLine[nbMots][0]=c;
-      	putLine[nbMots][1]='\0';
+        mot[0]=c;
+	mot[1]='\0';
+	printf("mid2 %s\n",mot);
+	add_charPile(putLine,mot,2);
       	nbMots++;
-      	//printf("%s\n",putLine[nbMots-1]);
+	mot=NULL;
       }
       else l++;
     }
   }
 
   if(l>0){
-    putLine[nbMots]=malloc(sizeof(char)*(l+1));
-    if(putLine[nbMots]==NULL){
+    mot=malloc(sizeof(char)*(l+1));
+    if(mot==NULL){
       perror("parse_line/malloc\n");
       return -1;
     }
-    copyMot(readLine,putLine[nbMots],len-l,len-2);
-    l=0;
-  }
-  //printf("%s : %d\n",putLine[nbMots],nbMots+1);
-  nbMots++;
+    //printf("len %d :\n",l);
+    copyMot(readLine,mot,len-l-1,len-2);
+    mot[l]='\0';
+    printf("fin %s\n",mot);    
+    add_charPile(putLine,mot,l+1);    
+    nbMots++;
+  }  
   return nbMots;
 }
 
@@ -405,7 +474,7 @@ void exec_exp(pile *p, exp* exp, FILE *outputFile) {
 
     if (resCalc.signe == '*') {
       print_exp(exp);
-      fprintf(stderr, "instruction érronée\n");
+      fprintf(stderr, "instruction érronée (n'oubliez pas d'espacer les variables et opérations.)\n");
       return;
     }
 
@@ -414,7 +483,7 @@ void exec_exp(pile *p, exp* exp, FILE *outputFile) {
   }
 
   print_exp(exp);
-  fprintf(stderr, "instruction érronée\n");
+  fprintf(stderr, "instruction érronée (n'oubliez pas d'espacer les variables et opérations.)\n");
 }
 
 int main(int argc, char *argv[]) {
@@ -432,6 +501,9 @@ int main(int argc, char *argv[]) {
 
   FILE *inputFile;
   FILE *outputFile;
+
+  char* EXIT_PROMPTS[]={"EXIT","exit","QUIT","quit"};
+  int exit_len=4;
 
   if (inputArgPos != -1) {
     inputFile = fopen(argv[inputArgPos + 1], "r");
@@ -451,27 +523,43 @@ int main(int argc, char *argv[]) {
 
   pile memoire = init_pile();
   char line[NB_CHAR_LINE];
-  exp* expressions[NB_MAX_LINES];
+  exp* expressions=init_exp();
   int nbMots;
-  int e=0;
+  int e=1;
+  
 
   while (fgets(line, sizeof(line), inputFile)) {
-    char* mots[NB_MAX_MOTS];
-    nbMots=parse_line(line,mots);
+    charPile mots=init_charPile();
+    nbMots=parse_line(line,&mots);
+    printf("Ligne %d,len=%d :\n",e,nbMots);
     if(nbMots==-1){
       return 1;
     }
-    expressions[e]=init_exp();
-    for(int i=0;i<nbMots;i++){
-      // printf("mot : %s\n",mots[i]);
-      add_mot(expressions[e],mots[i],1);
+    if(nbMots==1){
+      for(int i=0;i<exit_len;i++){
+	char* mot0=get_charPile(&mots,0);
+	if(strcmp(mot0,EXIT_PROMPTS[i])==0){
+	  free_pile(&memoire);
+	  fclose(inputFile);
+	  fclose(outputFile);
+	  return 0;
+	}
+      }
     }
-    // printf("Ligne %d :\n",e);
-    // print_exp(expressions[e]);
-    exec_exp(&memoire, expressions[e], outputFile);
-    free_exp(expressions[e]);
+    expressions=init_exp();
+    for(int i=0;i<nbMots && i<NB_MAX_MOTS;i++){
+      printf("mot : %s\n",get_charPile(&mots,i));
+      add_mot(expressions,get_charPile(&mots,i),1);
+    }    
+    //print_exp(expressions[e]);
+    exec_exp(&memoire, expressions, outputFile);
+    /*
+    for (int i = 0; i < memoire.len; i++) {
+      afficher_var(memoire.variables[i], stdout);
+    }
+    */
+    vider_exp(expressions);
     e++;
-    e%=NB_MAX_LINES;
   }
 
   printf("\nmemoire finale:\n");
@@ -496,6 +584,7 @@ int main(int argc, char *argv[]) {
   //
   // printf("%d\n", est_operation("*"));
 
+  free_pile(&memoire);
   fclose(inputFile);
   fclose(outputFile);
   return 0;

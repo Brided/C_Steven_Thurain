@@ -6,13 +6,28 @@ e =5
 fable = -123
    fail = 1 - -123
 truce3 = +123
+q
+q=
+q*
+q*=
+q*=1
+
 
 gui = 156 * truce3
 print a
+print fail
 print truce3
 print fable
 print e
 print gui
+
+test2=  1*-2
+test2 = test3
+
+print test1
+print test2
+print test3
+print test4
 
 print libraire5
 
